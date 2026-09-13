@@ -1,0 +1,49 @@
+---
+description: Use core AppSizes (BuildContext extension) for all UI dimensions and responsive layout. No competing sizing systems.
+alwaysApply: true
+---
+
+# AppSizes & Responsive UI
+
+`AppSizes` lives in `lib/core/extensions/app_sizes.dart`. It is a **BuildContext extension**, not a static token class. Feature screens must consume it. Do not add ScreenUtil, another sizing package, or a parallel token system.
+
+Reference design: **360×800**. Scale design values through the extension.
+
+## Use this
+
+```dart
+padding: context.spaceHorizontal(16)
+padding: context.spaceSymmetric(vertical: 16, horizontal: 20)
+SizedBox(height: context.height(16))
+width: context.width(120)
+borderRadius: context.circularRadius(12)
+```
+
+Also available: `context.getWidth` / `getHeight`, `availableHeight`, `isSmallScreen`, `isLandscape`, `addHorizontalSpace` / `addVerticalSpace`, `spaceVertical`, `spaceAroundAll`, `fromLTRB`, `spaceTop` / `spaceBottom` / `spaceStart` / `spaceEnd`.
+
+Typography: `context.font16Bold` (and siblings) from `text_style_extension.dart`. Colors: `context.colors`.
+
+## Do not
+
+```dart
+padding: const EdgeInsets.symmetric(horizontal: 20)
+const SizedBox(height: 16)
+width: 350
+height: 200
+AppSizes.horizontalPadding  // does not exist
+```
+
+Prefer `width: double.infinity` plus padding/constraints over fixed screen sizes. Combine with `MediaQuery`, `LayoutBuilder`, `Flexible`, `Expanded`, `FractionallySizedBox`, `ConstrainedBox`, `SafeArea`.
+
+`LayoutExtensions` (`.pad()`, `.padTop()`, …) use **unscaled** values. Prefer `context.space*` / `context.width` / `context.height` for production layout.
+
+## Hardcoded values
+
+Allowed only for a truly unique visual (illustration offset, OCR overlay, one-off animation). Extract to a named local constant (`const _illustrationOffset = 17.0`). If the value is reusable, add it to `AppSizes` in core instead.
+
+## Before any UI work
+
+1. Read `lib/core/extensions/app_sizes.dart`.
+2. Reuse existing core extensions (sizes, text, theme).
+3. Extend `AppSizes` only when a reusable dimension is missing.
+4. Never redefine sizing inside a feature.

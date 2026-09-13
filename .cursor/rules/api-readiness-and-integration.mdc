@@ -1,0 +1,54 @@
+---
+description: Classify API readiness from Postman, auto-integrate reliable endpoints, never invent APIs, never block UI on missing backend.
+alwaysApply: true
+---
+
+# API Readiness and Automatic Integration
+
+Classify each needed API against the **current** Postman Collection, then act. Do not ask "Should I connect the API?" when a reliable, clearly related endpoint exists.
+
+## READY
+
+Endpoint and required request/response data exist.
+
+Integrate through Clean Architecture:
+
+`Postman → Model → Entity → DataSource → Repository → UseCase → BLoC/Cubit → UI`
+
+## PARTIALLY READY
+
+Endpoint exists but some fields/behavior are missing or unstable.
+
+- Integrate only what is reliable.
+- Abstract missing parts in Domain/Data.
+- Use temporary mock data for missing fields only.
+- Document missing backend fields. Do **not** invent them.
+
+```dart
+// TODO(api): Backend does not yet return customer/vehicle/location.
+// Keep UI independent; replace mocks when Postman includes these fields.
+```
+
+## NOT READY
+
+No matching endpoint in Postman.
+
+- Do **not** invent routes (e.g. `GET /claims/my-claims` unless it exists).
+- Implement UI anyway: loading, success, empty, error, validation.
+- Keep Domain abstractions ready.
+- Mock/local data only as needed for UI.
+- Mark the gap:
+
+```dart
+// TODO(api): Waiting for the Backend endpoint in the Postman collection.
+// Replace the temporary data source once the API is available.
+```
+
+## When a feature is touched again
+
+1. Re-check Postman.
+2. Detect new or modified APIs.
+3. Integrate if appropriate; remove obsolete mocks.
+4. Keep UI unchanged unless the contract requires a meaningful change.
+
+A missing backend API must **never** block UI development. Architecture must allow swapping mocks for the real API later.

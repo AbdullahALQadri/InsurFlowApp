@@ -1,0 +1,42 @@
+---
+description: Clean Architecture for API work — AppConfig, Dio interceptors, models vs entities, status mapping, i18n, theme.
+alwaysApply: true
+---
+
+# API Clean Architecture
+
+Never call Dio from widgets, screens, BLoCs, or Cubits.
+
+```text
+Presentation → BLoC/Cubit → UseCase → Repository (interface)
+  → RepositoryImpl → Remote DataSource → Dio → Backend
+```
+
+## Config and auth
+
+- Base URL lives only in `AppConfig` (`lib/core/config/app_config.dart`). Support Dev/Staging/Production via dart-define, not scattered URLs.
+- Follow Postman’s auth. Store the login token and attach it via the **Dio interceptor**. Do not set `Authorization` in each feature. Never log passwords or tokens.
+
+## Models vs domain
+
+Backend JSON models stay in Data. Domain entities must not depend on Dio or raw response DTOs.
+
+`API response → ClaimModel → ClaimEntity → UseCase → BLoC → UI`
+
+## Status mapping
+
+Never show raw backend status strings in UI. Map in Domain, localize in Presentation.
+
+```text
+Backend: CORRECTION_REQUIRED
+Domain:  ClaimStatus.correctionRequired
+UI:      l10n (Correction Required / مطلوب تصحيح)
+```
+
+If backend status values change, update the mapping layer only.
+
+## UI contracts for API-driven states
+
+- Localize all loading/error/empty/validation/success/status copy (Arabic RTL, English LTR). No hardcoded user-facing strings.
+- Light and dark mode via existing theme (`context.colors`). No hardcoded feature colors.
+- Layout via `AppSizes` (`context.space*`, `context.width`, `context.height`). See the AppSizes rule.

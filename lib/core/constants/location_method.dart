@@ -1,0 +1,1 @@
+enum LocationMethod { gps, manual }

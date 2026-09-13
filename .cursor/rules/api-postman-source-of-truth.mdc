@@ -1,0 +1,31 @@
+---
+description: Always inspect the live InsurFlow Postman Collection before any backend-related work. Do not trust cached API knowledge.
+alwaysApply: true
+---
+
+# API Source of Truth — Live Postman Collection
+
+Backend and Flutter are developed in parallel. The Postman Collection is a **living API contract**. Endpoints, payloads, fields, validation, and behavior may change between tasks.
+
+## Collection
+
+- Workspace: [InsurFlow Postman Collection](https://www.postman.com/mohammedferwana2-211262/mohammed-ferwana-s-workspace/collection/pace502/insurflow?sideView=agentMode)
+- Default base URL: `https://insurflow-backend.onrender.com/api/v1`
+- Configure the URL only in `lib/core/config/app_config.dart` (`API_BASE_URL` dart-define). Never hardcode it in features.
+
+## Before every task
+
+Before implementing **any** feature, screen, flow, model, repository, BLoC/Cubit, or change that uses backend data:
+
+1. Understand the screen, required data, user actions, fetch/submit/update needs.
+2. Fetch/inspect the **current** Postman Collection (not memory, not prior chats, not existing Dart models).
+3. Search for related endpoints: method, path, params, headers, auth, body, multipart, responses, errors, status codes, pagination, status values.
+4. Compare with existing Flutter code. Integrate new/changed APIs automatically; never invent missing ones.
+
+Do **not** rely on previous conversations, local models, old services, or cached endpoint assumptions.
+
+## Never invent
+
+- Do not invent endpoints, routes, query params, or response fields.
+- If the collection is incomplete, treat missing APIs as not ready — do not guess.
+- When an existing Flutter API differs from Postman (path, method, body, fields, nullability, statuses), **update Flutter to match Postman**.
