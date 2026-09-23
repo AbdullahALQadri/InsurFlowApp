@@ -3,24 +3,24 @@ import 'package:dio/dio.dart';
 import 'package:insurflow/core/error/failures.dart';
 import 'package:insurflow/core/network/failure_mapper.dart';
 import 'package:insurflow/features/claims/data/datasources/claims_remote_data_source.dart';
-import 'package:insurflow/features/claims/data/mock/claim_details_preview_source.dart';
 import 'package:insurflow/features/claims/domain/entities/claim.dart';
 import 'package:insurflow/features/claims/domain/repositories/claims_repository.dart';
 import 'package:insurflow/features/claims/domain/vehicle_lookup_result.dart';
 
+/// TODO(api): GET /claims/{id} does not yet document claimNumber,
+/// vehicle make/model, assignedBy, assignedAt, or a structured address.
+/// The repository now returns exactly what the backend sends — no
+/// preview overlay fills empty fields. Update this layer only when the
+/// Postman contract exposes those fields.
 class ClaimsRepositoryImpl implements ClaimsRepository {
-  ClaimsRepositoryImpl(
-    this._remote, {
-    ClaimDetailsPreviewSource previewSource = const ClaimDetailsPreviewSource(),
-  }) : _previewSource = previewSource;
+  ClaimsRepositoryImpl(this._remote);
 
   final ClaimsRemoteDataSource _remote;
-  final ClaimDetailsPreviewSource _previewSource;
 
   @override
-  Future<Either<Failure, List<Claim>>> getMyClaims() async {
+  Future<Either<Failure, List<Claim>>> getMyClaims({String? status}) async {
     try {
-      return Right(await _remote.getMyClaims());
+      return Right(await _remote.getMyClaims(status: status));
     } on DioException catch (error) {
       return Left(FailureMapper.fromDio(error));
     } catch (_) {
@@ -31,8 +31,7 @@ class ClaimsRepositoryImpl implements ClaimsRepository {
   @override
   Future<Either<Failure, Claim>> getClaimDetails(String claimId) async {
     try {
-      final claim = await _remote.getClaimDetails(claimId);
-      return Right(_previewSource.fillMissing(claim));
+      return Right(await _remote.getClaimDetails(claimId));
     } on DioException catch (error) {
       return Left(FailureMapper.fromDio(error));
     } catch (_) {
@@ -43,8 +42,7 @@ class ClaimsRepositoryImpl implements ClaimsRepository {
   @override
   Future<Either<Failure, Claim>> startClaim(String claimId) async {
     try {
-      final claim = await _remote.startClaim(claimId);
-      return Right(_previewSource.fillMissing(claim));
+      return Right(await _remote.startClaim(claimId));
     } on DioException catch (error) {
       return Left(FailureMapper.fromDio(error));
     } catch (_) {
@@ -55,8 +53,7 @@ class ClaimsRepositoryImpl implements ClaimsRepository {
   @override
   Future<Either<Failure, Claim>> submitClaim(String claimId) async {
     try {
-      final claim = await _remote.submitClaim(claimId);
-      return Right(_previewSource.fillMissing(claim));
+      return Right(await _remote.submitClaim(claimId));
     } on DioException catch (error) {
       return Left(FailureMapper.fromDio(error));
     } catch (_) {

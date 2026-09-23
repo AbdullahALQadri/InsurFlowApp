@@ -21,6 +21,15 @@ import 'package:insurflow/features/claims/domain/usecases/submit_claim.dart';
 import 'package:insurflow/features/claims/presentation/bloc/claim_details_bloc.dart';
 import 'package:insurflow/features/claims/presentation/bloc/claims_bloc.dart';
 
+import 'package:insurflow/core/services/location_tracking_service.dart';
+import 'package:insurflow/features/claims/domain/usecases/get_adjuster_stats.dart';
+import 'package:insurflow/features/claims/domain/usecases/update_claim_accident.dart';
+import 'package:insurflow/features/claims/domain/usecases/update_claim_location.dart';
+import 'package:insurflow/features/claims/domain/usecases/update_claim_vehicle.dart';
+import 'package:insurflow/features/claims/domain/usecases/upload_claim_evidence.dart';
+import 'package:insurflow/features/claims/domain/usecases/upload_claim_signature.dart';
+import 'package:insurflow/features/home/presentation/cubit/home_cubit.dart';
+
 class AppDependencies {
   AppDependencies._({
     required this.tokenStore,
@@ -35,6 +44,13 @@ class AppDependencies {
     required this.startClaimUseCase,
     required this.submitClaimUseCase,
     required this.lookupVehicleUseCase,
+    required this.updateClaimVehicleUseCase,
+    required this.updateClaimAccidentUseCase,
+    required this.updateClaimLocationUseCase,
+    required this.uploadClaimEvidenceUseCase,
+    required this.uploadClaimSignatureUseCase,
+    required this.getAdjusterStatsUseCase,
+    required this.locationTrackingService,
   });
 
   final TokenStore tokenStore;
@@ -49,6 +65,13 @@ class AppDependencies {
   final StartClaimUseCase startClaimUseCase;
   final SubmitClaimUseCase submitClaimUseCase;
   final LookupVehicleUseCase lookupVehicleUseCase;
+  final UpdateClaimVehicleUseCase updateClaimVehicleUseCase;
+  final UpdateClaimAccidentUseCase updateClaimAccidentUseCase;
+  final UpdateClaimLocationUseCase updateClaimLocationUseCase;
+  final UploadClaimEvidenceUseCase uploadClaimEvidenceUseCase;
+  final UploadClaimSignatureUseCase uploadClaimSignatureUseCase;
+  final GetAdjusterStatsUseCase getAdjusterStatsUseCase;
+  final LocationTrackingService locationTrackingService;
 
   static AppDependencies? _instance;
 
@@ -70,6 +93,10 @@ class AppDependencies {
     final claimsRepository = ClaimsRepositoryImpl(
       ClaimsRemoteDataSourceImpl(dio),
     );
+    final updateClaimLocation = UpdateClaimLocationUseCase(claimsRepository);
+    final trackingService = LocationTrackingService(
+      updateClaimLocationUseCase: updateClaimLocation,
+    );
 
     _instance = AppDependencies._(
       tokenStore: store,
@@ -84,6 +111,13 @@ class AppDependencies {
       startClaimUseCase: StartClaimUseCase(claimsRepository),
       submitClaimUseCase: SubmitClaimUseCase(claimsRepository),
       lookupVehicleUseCase: LookupVehicleUseCase(claimsRepository),
+      updateClaimVehicleUseCase: UpdateClaimVehicleUseCase(claimsRepository),
+      updateClaimAccidentUseCase: UpdateClaimAccidentUseCase(claimsRepository),
+      updateClaimLocationUseCase: updateClaimLocation,
+      uploadClaimEvidenceUseCase: UploadClaimEvidenceUseCase(claimsRepository),
+      uploadClaimSignatureUseCase: UploadClaimSignatureUseCase(claimsRepository),
+      getAdjusterStatsUseCase: GetAdjusterStatsUseCase(claimsRepository),
+      locationTrackingService: trackingService,
     );
     return _instance!;
   }
@@ -106,6 +140,13 @@ class AppDependencies {
     return ClaimDetailsBloc(
       getClaimDetailsUseCase: getClaimDetailsUseCase,
       startClaimUseCase: startClaimUseCase,
+    );
+  }
+
+  HomeCubit createHomeCubit() {
+    return HomeCubit(
+      getMyClaimsUseCase: getMyClaimsUseCase,
+      getAdjusterStatsUseCase: getAdjusterStatsUseCase,
     );
   }
 }

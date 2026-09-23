@@ -66,6 +66,8 @@ class AppStrings {
 
   String get filterAll => isArabic ? 'الكل' : 'All';
   String get statusNew => isArabic ? 'جديدة' : 'New';
+  String get statusPendingAcceptance =>
+      isArabic ? 'بانتظار القبول' : 'Pending Acceptance';
   String get statusAssigned => isArabic ? 'مسندة' : 'Assigned';
   String get statusUnderReview => isArabic ? 'قيد المراجعة' : 'Under Review';
   String get statusInProgress => isArabic ? 'قيد التنفيذ' : 'In Progress';
@@ -95,6 +97,7 @@ class AppStrings {
   String get location => isArabic ? 'الموقع' : 'LOCATION';
   String get assignment => isArabic ? 'الإسناد' : 'ASSIGNMENT';
   String get assignedBy => isArabic ? 'أُسندت بواسطة:' : 'Assigned by:';
+  String get assignedTo => isArabic ? 'أُسندت إلى:' : 'Assigned to:';
   String get assignedAt => isArabic ? 'تاريخ الإسناد:' : 'Assigned at:';
   String get viewClaim => isArabic ? 'عرض المطالبة' : 'View Claim';
   String get later => isArabic ? 'لاحقاً' : 'Later';
@@ -731,6 +734,8 @@ class AppStrings {
     switch (status) {
       case ClaimStatus.newClaim:
         return statusNew;
+      case ClaimStatus.pendingAcceptance:
+        return statusPendingAcceptance;
       case ClaimStatus.assigned:
         return statusAssigned;
       case ClaimStatus.inProgress:

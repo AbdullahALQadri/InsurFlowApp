@@ -9,11 +9,15 @@ sealed class ClaimsEvent {
 }
 
 class ClaimsRequested extends ClaimsEvent {
-  const ClaimsRequested();
+  const ClaimsRequested({this.statusFilter});
+
+  final String? statusFilter;
 }
 
 class ClaimsRefreshed extends ClaimsEvent {
-  const ClaimsRefreshed();
+  const ClaimsRefreshed({this.statusFilter});
+
+  final String? statusFilter;
 }
 
 sealed class ClaimsState {
@@ -35,13 +39,16 @@ class ClaimsRefreshInProgress extends ClaimsState {
 }
 
 class ClaimsLoadSuccess extends ClaimsState {
-  const ClaimsLoadSuccess(this.claims);
+  const ClaimsLoadSuccess(this.claims, {this.activeFilter});
 
   final List<Claim> claims;
+  final String? activeFilter;
 }
 
 class ClaimsLoadEmpty extends ClaimsState {
-  const ClaimsLoadEmpty();
+  const ClaimsLoadEmpty({this.activeFilter});
+
+  final String? activeFilter;
 }
 
 class ClaimsLoadFailure extends ClaimsState {
@@ -65,7 +72,7 @@ class ClaimsBloc extends Bloc<ClaimsEvent, ClaimsState> {
     Emitter<ClaimsState> emit,
   ) async {
     emit(const ClaimsLoadInProgress());
-    await _load(emit);
+    await _load(emit, event.statusFilter);
   }
 
   Future<void> _onRefreshed(
@@ -78,15 +85,20 @@ class ClaimsBloc extends Bloc<ClaimsEvent, ClaimsState> {
     } else if (current is ClaimsLoadEmpty) {
       emit(const ClaimsLoadInProgress());
     }
-    await _load(emit);
+    await _load(emit, event.statusFilter);
   }
 
-  Future<void> _load(Emitter<ClaimsState> emit) async {
-    final result = await _getMyClaimsUseCase(const NoParams());
+  Future<void> _load(Emitter<ClaimsState> emit, String? statusFilter) async {
+    final result = statusFilter != null && statusFilter.isNotEmpty
+        ? await _getMyClaimsUseCase.byStatus(statusFilter)
+        : await _getMyClaimsUseCase(const NoParams());
+
     result.fold(
       (failure) => emit(ClaimsLoadFailure(failure)),
       (claims) => emit(
-        claims.isEmpty ? const ClaimsLoadEmpty() : ClaimsLoadSuccess(claims),
+        claims.isEmpty
+            ? ClaimsLoadEmpty(activeFilter: statusFilter)
+            : ClaimsLoadSuccess(claims, activeFilter: statusFilter),
       ),
     );
   }

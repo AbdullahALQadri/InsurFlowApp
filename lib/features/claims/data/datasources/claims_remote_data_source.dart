@@ -4,7 +4,7 @@ import 'package:insurflow/features/claims/domain/entities/claim.dart';
 import 'package:insurflow/features/claims/domain/vehicle_lookup_result.dart';
 
 abstract class ClaimsRemoteDataSource {
-  Future<List<Claim>> getMyClaims();
+  Future<List<Claim>> getMyClaims({String? status});
 
   Future<Claim> getClaimDetails(String claimId);
 
@@ -53,10 +53,7 @@ abstract class ClaimsRemoteDataSource {
     required String filePath,
   });
 
-  Future<Map<String, dynamic>> getAdjusterStats({
-    DateTime? from,
-    DateTime? to,
-  });
+  Future<Map<String, dynamic>> getAdjusterStats({DateTime? from, DateTime? to});
 }
 
 class ClaimsRemoteDataSourceImpl implements ClaimsRemoteDataSource {
@@ -65,8 +62,13 @@ class ClaimsRemoteDataSourceImpl implements ClaimsRemoteDataSource {
   final Dio _dio;
 
   @override
-  Future<List<Claim>> getMyClaims() async {
-    final response = await _dio.get<dynamic>('/claims');
+  Future<List<Claim>> getMyClaims({String? status}) async {
+    final response = await _dio.get<dynamic>(
+      '/claims',
+      queryParameters: (status != null && status.isNotEmpty)
+          ? {'status': status}
+          : null,
+    );
     return ClaimModel.listFromResponse(response.data);
   }
 
@@ -87,7 +89,9 @@ class ClaimsRemoteDataSourceImpl implements ClaimsRemoteDataSource {
 
   @override
   Future<Claim> startClaim(String claimId) async {
-    final response = await _dio.post<dynamic>('/claims/$claimId/inspection/start');
+    final response = await _dio.post<dynamic>(
+      '/claims/$claimId/inspection/start',
+    );
     final claim = ClaimModel.fromResponse(response.data);
     if (claim != null) return claim;
     return getClaimDetails(claimId);
@@ -95,7 +99,9 @@ class ClaimsRemoteDataSourceImpl implements ClaimsRemoteDataSource {
 
   @override
   Future<Claim> submitClaim(String claimId) async {
-    final response = await _dio.post<dynamic>('/claims/$claimId/inspection/submit');
+    final response = await _dio.post<dynamic>(
+      '/claims/$claimId/inspection/submit',
+    );
     final claim = ClaimModel.fromResponse(response.data);
     if (claim != null) return claim;
     return getClaimDetails(claimId);

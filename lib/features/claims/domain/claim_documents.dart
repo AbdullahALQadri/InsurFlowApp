@@ -1,9 +1,10 @@
 /// Required claim documents for a field inspection.
 ///
-/// TODO(api):
-/// Waiting for the Backend document upload endpoint in the Postman
-/// collection. Keep this checklist local until a reliable multipart
-/// contract exists. Do not invent upload routes or response fields.
+/// TODO(api): Still no document upload endpoint in the Postman
+/// collection (`/claims/{id}/evidence` and `/claims/{id}/signature`
+/// exist, but no driver-license/police-report upload). Keep this
+/// checklist local until a reliable multipart contract exists.
+/// Do not invent upload routes or response fields.
 enum ClaimDocumentType { driverLicense, nationalId, policeReport, other }
 
 enum DocumentUploadStatus { missing, uploaded }

@@ -10,6 +10,22 @@ import 'package:insurflow/features/claims/presentation/widgets/stylized_license_
 import 'package:insurflow/features/claims/presentation/widgets/verified_lookup_card.dart';
 
 void main() {
+  VehicleLookupResult lookupFixture() {
+    return VehicleLookupResult(
+      claimId: 'CLM-0001',
+      makeModel: 'Toyota Corolla',
+      year: 2022,
+      colorKey: 'white',
+      licensePlate: 'ABC-1234',
+      customerName: 'Ahmed Ali',
+      customerPhone: '059xxxxxxx',
+      policyNumber: 'POL-102938',
+      policyStatus: PolicyStatus.active,
+      policyStart: DateTime(2026, 1, 1),
+      policyEnd: DateTime(2026, 12, 31),
+    );
+  }
+
   Widget wrap(Widget child) {
     return MaterialApp(
       theme: AppTheme.lightTheme,
@@ -38,12 +54,7 @@ void main() {
   testWidgets('shows verified vehicle, customer, and policy cards', (
     tester,
   ) async {
-    await pumpScreen(
-      tester,
-      VehicleInformationScreen(
-        result: VehicleLookupResult.demo(claimId: 'CLM-0001'),
-      ),
-    );
+    await pumpScreen(tester, VehicleInformationScreen(result: lookupFixture()));
 
     expect(find.text('Vehicle Information'), findsOneWidget);
     expect(find.text('VEHICLE'), findsOneWidget);
@@ -79,7 +90,7 @@ void main() {
     await pumpScreen(
       tester,
       VehicleInformationScreen(
-        result: VehicleLookupResult.demo(claimId: 'CLM-0001'),
+        result: lookupFixture(),
         onConfirm: (result) => confirmed = result,
         onEdit: () => edited = true,
       ),

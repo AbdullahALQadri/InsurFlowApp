@@ -1,9 +1,9 @@
 /// Required vehicle photo checklist for a field inspection.
 ///
-/// TODO(api):
-/// Waiting for the Backend evidence upload endpoint.
-/// Replace local capture state once the API is available in the
-/// Postman collection. Do not invent upload routes or response fields.
+/// TODO(api): `POST /claims/{id}/evidence` exists in the Postman
+/// collection (see UploadClaimEvidenceUseCase in DI). The captured
+/// checklist is still local — wire it to the real endpoint in the API
+/// integration prompt. Do not invent upload routes or response fields.
 enum EvidenceCategory {
   licensePlate,
   front,

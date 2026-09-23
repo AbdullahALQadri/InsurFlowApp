@@ -33,28 +33,25 @@ class VehicleLookupResult {
   bool get hasCustomer => customerName.trim().isNotEmpty;
   bool get hasPolicy => policyNumber.trim().isNotEmpty;
 
-  static const demoPlateNumber = 'ABC-1234';
-  static const demoPolicyNumber = 'POL-102938';
-
-  factory VehicleLookupResult.demo({
+  /// Empty result used only when no lookup has run yet. Every field is
+  /// blank/unknown so the UI renders "not available" instead of fake
+  /// vehicle, customer, or policy data.
+  factory VehicleLookupResult.empty({
     required String claimId,
-    String? plateNumber,
+    String plateNumber = '',
   }) {
-    final plate = plateNumber?.trim();
     return VehicleLookupResult(
       claimId: claimId,
-      makeModel: 'Toyota Corolla',
-      year: 2022,
-      colorKey: 'white',
-      licensePlate: (plate != null && plate.isNotEmpty)
-          ? plate
-          : demoPlateNumber,
-      customerName: 'Ahmed Ali',
-      customerPhone: '059xxxxxxx',
-      policyNumber: demoPolicyNumber,
-      policyStatus: PolicyStatus.active,
-      policyStart: DateTime(2026, 1, 1),
-      policyEnd: DateTime(2026, 12, 31),
+      makeModel: '',
+      year: 0,
+      colorKey: '',
+      licensePlate: plateNumber.trim(),
+      customerName: '',
+      customerPhone: '',
+      policyNumber: '',
+      policyStatus: PolicyStatus.unknown,
+      policyStart: DateTime.fromMillisecondsSinceEpoch(0),
+      policyEnd: DateTime.fromMillisecondsSinceEpoch(0),
     );
   }
 

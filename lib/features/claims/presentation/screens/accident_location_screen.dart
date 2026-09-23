@@ -119,7 +119,9 @@ class AccidentLocationScreen extends StatelessWidget {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          location.street,
+                                          location.street.trim().isEmpty
+                                              ? strings.notAvailable
+                                              : location.street,
                                           style: context.font18Bold?.copyWith(
                                             color: colors.textPrimaryColor,
                                             fontWeight: FontWeightHelper.bold,
@@ -128,7 +130,9 @@ class AccidentLocationScreen extends StatelessWidget {
                                         ),
                                         context.addVerticalSpace(4),
                                         Text(
-                                          location.city,
+                                          location.city.trim().isEmpty
+                                              ? strings.notAvailable
+                                              : location.city,
                                           style: context.font16Regular
                                               ?.copyWith(
                                                 color:
@@ -142,14 +146,18 @@ class AccidentLocationScreen extends StatelessWidget {
                                   context.addVerticalSpace(16),
                                   _Fact(
                                     label: strings.coordinates,
-                                    value: location.coordinatesLabel,
+                                    value: location.hasCoordinates
+                                        ? location.coordinatesLabel
+                                        : strings.notAvailable,
                                   ),
                                   context.addVerticalSpace(16),
                                   _Fact(
                                     label: strings.captured,
-                                    value: ClaimDateFormatter.capturedAt(
-                                      location.capturedAt,
-                                    ),
+                                    value: location.hasCoordinates
+                                        ? ClaimDateFormatter.capturedAt(
+                                            location.capturedAt,
+                                          )
+                                        : strings.notAvailable,
                                   ),
                                 ],
                               ),

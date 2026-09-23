@@ -17,6 +17,10 @@ class ClaimStatusColors {
     switch (status) {
       case ClaimStatus.newClaim:
         return newClaim;
+      case ClaimStatus.pendingAcceptance:
+        // Neutral pending tone until the acceptance workflow is
+        // confirmed by the backend contract.
+        return newClaim;
       case ClaimStatus.assigned:
         return assigned;
       case ClaimStatus.inProgress:

@@ -1,6 +1,8 @@
 import 'package:insurflow/core/network/json_reader.dart';
 import 'package:insurflow/features/claims/domain/claim_status.dart';
 import 'package:insurflow/features/claims/domain/entities/claim.dart';
+import 'package:insurflow/features/claims/domain/entities/claim_assignee.dart';
+import 'package:insurflow/features/claims/domain/entities/incident_coordinates.dart';
 
 class ClaimModel {
   const ClaimModel({required this.entity});
@@ -56,6 +58,9 @@ class ClaimModel {
         adjusterId: JsonReader.string(json, ['adjusterId', 'adjuster_id']),
         priority: JsonReader.string(json, ['priority']),
         notes: JsonReader.string(json, ['notes']),
+        // NOTE: `assignedBy` is a different concept from `assignedTo`.
+        // It is not part of the current GET /claims response, so it
+        // stays null unless another confirmed contract provides it.
         assignedBy: JsonReader.string(json, [
           'assignedBy',
           'assigned_by',
@@ -66,6 +71,13 @@ class ClaimModel {
           'assigned_at',
           'assignedDate',
         ]),
+        // Nested objects from GET /claims. Null-safe: the backend may
+        // send `"incidentCoordinates": null`.
+        assignedTo: _readAssignee(json, 'assignedTo'),
+        fieldAdjuster: _readAssignee(json, 'fieldAdjuster'),
+        incidentCoordinates: _readCoordinates(
+          json['incidentCoordinates'] ?? json['incident_coordinates'],
+        ),
         createdAt: JsonReader.date(json, ['createdAt', 'created_at']),
         updatedAt: JsonReader.date(json, [
           'updatedAt',
@@ -88,5 +100,37 @@ class ClaimModel {
     final entity = ClaimModel.fromJson(body).entity;
     if (entity.id.isEmpty) return null;
     return entity;
+  }
+
+  /// Reads the nested assignee objects (`assignedTo`, `fieldAdjuster`).
+  /// Returns null when the key is absent or the object carries no data.
+  static ClaimAssignee? _readAssignee(Map<String, dynamic> json, String key) {
+    final nested = JsonReader.asMap(json[key]);
+    if (nested == null) return null;
+    final id = JsonReader.string(nested, ['_id', 'id']);
+    final name = JsonReader.string(nested, ['name', 'fullName']);
+    if (id == null && name == null) return null;
+    return ClaimAssignee(id: id, name: name);
+  }
+
+  /// Reads the nested `incidentCoordinates` object. Returns null when
+  /// the backend sends `"incidentCoordinates": null` or a partial fix.
+  static IncidentCoordinates? _readCoordinates(Object? raw) {
+    final nested = JsonReader.asMap(raw);
+    if (nested == null) return null;
+    final latitude = _readDouble(nested['latitude']);
+    final longitude = _readDouble(nested['longitude']);
+    if (latitude == null || longitude == null) return null;
+    return IncidentCoordinates(
+      latitude: latitude,
+      longitude: longitude,
+      capturedAt: JsonReader.date(nested, ['capturedAt', 'captured_at']),
+    );
+  }
+
+  static double? _readDouble(Object? value) {
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value.trim());
+    return null;
   }
 }

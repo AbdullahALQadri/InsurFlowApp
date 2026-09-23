@@ -5,6 +5,8 @@ import 'package:insurflow/core/extensions/text_style_extension.dart';
 import 'package:insurflow/core/global/design_system/app_color/app_splash_colors.dart';
 import 'package:insurflow/core/global/design_system/font_weight/font_weight_helper.dart';
 import 'package:insurflow/core/global/design_system/theme_data/theme_extension.dart';
+import 'package:insurflow/core/global/design_system/widgets/location_status_bar.dart';
+import 'package:insurflow/core/services/location_tracking_service.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({
@@ -50,6 +52,8 @@ class HomeHeader extends StatelessWidget {
                   height: 1.35,
                 ),
               ),
+              context.addVerticalSpace(8),
+              const LocationStatusBar(status: GpsStatus.active),
             ],
           ),
         ),

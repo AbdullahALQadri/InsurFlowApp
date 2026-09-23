@@ -79,6 +79,10 @@ class _VehicleLookupScreenState extends State<VehicleLookupScreen>
 
   Future<VehicleLookupResult?> _lookupVehicle() async {
     if (widget.onComplete != null) return null;
+    if (_plate.isEmpty) {
+      // Never query the lookup API with an invented plate number.
+      return _plateOnlyResult();
+    }
     try {
       final result = await AppDependencies.instance.lookupVehicleUseCase(
         LookupVehicleParams(claimId: widget.args.claimId, plateNumber: _plate),
@@ -89,10 +93,7 @@ class _VehicleLookupScreenState extends State<VehicleLookupScreen>
     }
   }
 
-  String get _plate {
-    final plate = widget.args.plateNumber.trim();
-    return plate.isEmpty ? LicensePlateFormat.example : plate;
-  }
+  String get _plate => widget.args.plateNumber.trim();
 
   VehicleLookupResult _plateOnlyResult() {
     return VehicleLookupResult(
@@ -143,7 +144,7 @@ class _VehicleLookupScreenState extends State<VehicleLookupScreen>
     final colors = context.colors;
     final strings = AppStrings.of(context);
     final plate = widget.args.plateNumber.trim().isEmpty
-        ? LicensePlateFormat.example
+        ? strings.notAvailable
         : widget.args.plateNumber.trim();
     final lottieSize = context.isSmallScreen
         ? context.height(168)

@@ -18,7 +18,7 @@ import 'package:insurflow/features/claims/presentation/screens/claim_documents_s
 import 'package:insurflow/features/claims/presentation/screens/claim_validation_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/customer_signature_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/vehicle_evidence_screen.dart';
-import 'package:insurflow/features/claims/presentation/screens/vehicle_information_screen.dart';
+import 'package:insurflow/features/claims/presentation/screens/vehicle_identification_screen.dart';
 import 'package:insurflow/features/claims/presentation/widgets/claim_ready_banner.dart';
 import 'package:insurflow/features/claims/presentation/widgets/claim_review_section_card.dart';
 import 'package:insurflow/features/claims/presentation/widgets/inspection_step_track.dart';
@@ -60,7 +60,7 @@ class ClaimReviewScreen extends StatelessWidget {
     final colors = context.colors;
     final strings = AppStrings.of(context);
     final summary =
-        args.summary ?? ClaimReviewSummary.ready(claimId: args.claimId);
+        args.summary ?? ClaimReviewSummary.pending(claimId: args.claimId);
     final overlay = SystemUiOverlayStyle.light.copyWith(
       statusBarColor: Colors.transparent,
       systemNavigationBarColor: colors.cardColor,
@@ -207,14 +207,33 @@ class ClaimReviewScreen extends StatelessWidget {
   ) {
     switch (section) {
       case ClaimReviewSectionId.vehicle:
-        return [summary.licensePlate, summary.makeModel];
+        return [
+          summary.licensePlate.isNotEmpty
+              ? summary.licensePlate
+              : strings.notAvailable,
+          summary.makeModel.isNotEmpty
+              ? summary.makeModel
+              : strings.notAvailable,
+        ];
       case ClaimReviewSectionId.customer:
-        return [summary.customerName];
+        return [
+          summary.customerName.isNotEmpty
+              ? summary.customerName
+              : strings.notAvailable,
+        ];
       case ClaimReviewSectionId.policy:
-        return [summary.policyNumber, strings.policyActiveShort];
+        return [
+          summary.policyNumber.isNotEmpty
+              ? summary.policyNumber
+              : strings.notAvailable,
+          if (summary.policyStatus == PolicyStatus.active)
+            strings.policyActiveShort,
+        ];
       case ClaimReviewSectionId.accident:
         return [
-          strings.accidentTypeLabel(summary.accidentType),
+          summary.accidentType != null
+              ? strings.accidentTypeLabel(summary.accidentType!)
+              : strings.notAvailable,
           if (summary.accidentDateComplete) strings.accidentDate,
           if (summary.accidentTimeComplete) strings.accidentTime,
           if (summary.accidentDescriptionComplete) strings.accidentDescription,
@@ -254,19 +273,16 @@ class ClaimReviewScreen extends StatelessWidget {
       case ClaimReviewSectionId.vehicle:
       case ClaimReviewSectionId.customer:
       case ClaimReviewSectionId.policy:
-        VehicleInformationScreen.open(
-          context,
-          result: VehicleLookupResult.demo(
-            claimId: summary.claimId,
-            plateNumber: summary.licensePlate,
-          ),
-        );
+        // TODO(api): Editing vehicle/customer/policy restarts the real
+        // lookup flow (plate capture -> GET /vehicles/lookup). The last
+        // lookup result is not persisted yet, so it is not faked here.
+        VehicleIdentificationScreen.open(context, claimId: summary.claimId);
       case ClaimReviewSectionId.accident:
         AccidentDetailsScreen.open(context, claimId: summary.claimId);
       case ClaimReviewSectionId.location:
         AccidentLocationScreen.open(
           context,
-          location: AccidentLocation.demo(claimId: summary.claimId),
+          location: AccidentLocation.pending(claimId: summary.claimId),
         );
       case ClaimReviewSectionId.evidence:
         VehicleEvidenceScreen.open(context, claimId: summary.claimId);

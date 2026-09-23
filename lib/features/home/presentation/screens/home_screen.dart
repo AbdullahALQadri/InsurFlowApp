@@ -13,10 +13,12 @@ import 'package:insurflow/features/claims/domain/claim_status.dart';
 import 'package:insurflow/features/claims/domain/entities/claim.dart';
 import 'package:insurflow/features/claims/presentation/bloc/claims_bloc.dart';
 import 'package:insurflow/features/claims/presentation/screens/claim_details_screen.dart';
+import 'package:insurflow/features/home/presentation/widgets/active_inspection_card.dart';
 import 'package:insurflow/features/home/presentation/widgets/claim_filter_bar.dart';
 import 'package:insurflow/features/home/presentation/widgets/claim_list_card.dart';
 import 'package:insurflow/features/home/presentation/widgets/home_header.dart';
 import 'package:insurflow/features/home/presentation/widgets/needs_attention_card.dart';
+import 'package:insurflow/features/home/presentation/widgets/new_assignment_banner.dart';
 import 'package:insurflow/features/home/presentation/widgets/today_task_metrics.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -123,6 +125,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
               final claims = _claimsOf(state);
               final attention = _attentionClaim(claims);
+              final newAssignment = claims.cast<Claim?>().firstWhere(
+                (c) => c?.status == ClaimStatus.assigned,
+                orElse: () => null,
+              );
+              final activeInspection = claims.cast<Claim?>().firstWhere(
+                (c) => c?.status == ClaimStatus.inProgress,
+                orElse: () => null,
+              );
               final filtered = _filteredClaims(claims);
               final authState = context.watch<AuthBloc>().state;
               final adjusterName = authState is AuthAuthenticated
@@ -171,6 +181,32 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
+                    if (newAssignment != null)
+                      SliverPadding(
+                        padding: context.spaceSymmetric(
+                          vertical: 8,
+                          horizontal: 20,
+                        ),
+                        sliver: SliverToBoxAdapter(
+                          child: NewAssignmentBanner(
+                            claim: newAssignment,
+                            onViewClaim: () => _openClaim(newAssignment.toPreview()),
+                          ),
+                        ),
+                      ),
+                    if (activeInspection != null)
+                      SliverPadding(
+                        padding: context.spaceSymmetric(
+                          vertical: 8,
+                          horizontal: 20,
+                        ),
+                        sliver: SliverToBoxAdapter(
+                          child: ActiveInspectionCard(
+                            claim: activeInspection,
+                            onContinue: () => _openClaim(activeInspection.toPreview()),
+                          ),
+                        ),
+                      ),
                     if (attention != null)
                       SliverPadding(
                         padding: context.spaceSymmetric(

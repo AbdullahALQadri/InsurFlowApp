@@ -4,7 +4,7 @@ import 'package:insurflow/features/claims/domain/entities/claim.dart';
 import 'package:insurflow/features/claims/domain/vehicle_lookup_result.dart';
 
 abstract class ClaimsRepository {
-  Future<Either<Failure, List<Claim>>> getMyClaims();
+  Future<Either<Failure, List<Claim>>> getMyClaims({String? status});
 
   Future<Either<Failure, Claim>> getClaimDetails(String claimId);
 

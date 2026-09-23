@@ -51,9 +51,7 @@ void main() {
   blocTest<AuthBloc, AuthState>(
     'emits authenticated when login succeeds',
     build: () {
-      when(
-        () => loginUseCase(any()),
-      ).thenAnswer((_) async => Right(session));
+      when(() => loginUseCase(any())).thenAnswer((_) async => Right(session));
       return buildBloc();
     },
     act: (bloc) => bloc.add(

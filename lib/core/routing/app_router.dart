@@ -75,10 +75,7 @@ class AppRouter {
         final args = settings.arguments;
         final result = args is PlateOcrResultArgs
             ? args
-            : const PlateOcrResultArgs(
-                claimId: '',
-                plateNumber: PlateOcrResultScreen.demoPlateNumber,
-              );
+            : const PlateOcrResultArgs(claimId: '', plateNumber: '');
         return MaterialPageRoute(
           builder: (_) => PlateOcrResultScreen(args: result),
         );
@@ -102,7 +99,7 @@ class AppRouter {
         final args = settings.arguments;
         final result = args is VehicleLookupResult
             ? args
-            : VehicleLookupResult.demo(claimId: '');
+            : VehicleLookupResult.empty(claimId: '');
         return MaterialPageRoute(
           builder: (_) => VehicleInformationScreen(result: result),
         );
@@ -134,7 +131,7 @@ class AppRouter {
         final args = settings.arguments;
         final location = args is AccidentLocation
             ? args
-            : AccidentLocation.demo(claimId: args is String ? args : '');
+            : AccidentLocation.pending(claimId: args is String ? args : '');
         return MaterialPageRoute(
           builder: (_) => AccidentLocationScreen(location: location),
         );
@@ -205,7 +202,7 @@ class AppRouter {
         final validation = args is ClaimValidationArgs
             ? args
             : ClaimValidationArgs(
-                summary: ClaimReviewSummary.ready(
+                summary: ClaimReviewSummary.pending(
                   claimId: args is String ? args : '',
                 ),
               );

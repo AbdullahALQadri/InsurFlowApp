@@ -14,7 +14,9 @@ void main() {
 
   tearDown(AppDependencies.reset);
 
-  testWidgets('Splash screen is the initial route', (WidgetTester tester) async {
+  testWidgets('Splash screen is the initial route', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(const InsurFlowApp());
     await tester.pump();
 

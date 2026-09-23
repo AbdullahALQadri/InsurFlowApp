@@ -149,6 +149,7 @@ class _AssignmentBody extends StatelessWidget {
                               lines: [
                                 _value(context, data.street),
                                 _value(context, data.city),
+                                _value(context, data.coordinates?.label),
                               ],
                             ),
                             context.addVerticalSpace(12),
@@ -162,6 +163,20 @@ class _AssignmentBody extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Text(
+                              strings.assignedTo,
+                              style: context.font14Regular?.copyWith(
+                                color: colors.textSecondaryColor,
+                              ),
+                            ),
+                            context.addVerticalSpace(2),
+                            Text(
+                              _value(context, data.assignedToName),
+                              style: context.font16Bold?.copyWith(
+                                color: colors.textPrimaryColor,
+                              ),
+                            ),
+                            context.addVerticalSpace(12),
                             Text(
                               strings.assignedBy,
                               style: context.font14Regular?.copyWith(
@@ -184,7 +199,11 @@ class _AssignmentBody extends StatelessWidget {
                             ),
                             context.addVerticalSpace(2),
                             Text(
-                              ClaimDateFormatter.assignedOn(data.assignedAt),
+                              data.assignedAt == null
+                                  ? strings.notAvailable
+                                  : ClaimDateFormatter.assignedOn(
+                                      data.assignedAt!,
+                                    ),
                               style: context.font16Bold?.copyWith(
                                 color: colors.textPrimaryColor,
                               ),
@@ -232,8 +251,10 @@ class _AssignmentBody extends StatelessWidget {
     );
   }
 
-  String _value(BuildContext context, String value) {
-    if (value.trim().isEmpty) return AppStrings.of(context).notAvailable;
+  String _value(BuildContext context, String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return AppStrings.of(context).notAvailable;
+    }
     return value;
   }
 }

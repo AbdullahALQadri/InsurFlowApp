@@ -33,8 +33,6 @@ class PlateOcrResultScreen extends StatelessWidget {
   final ValueChanged<String>? onConfirm;
   final VoidCallback? onRetake;
 
-  static const demoPlateNumber = 'ABC-1234';
-
   static Future<dynamic> open(
     BuildContext context, {
     required String claimId,
@@ -50,9 +48,8 @@ class PlateOcrResultScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final strings = AppStrings.of(context);
-    final plate = args.plateNumber.trim().isEmpty
-        ? demoPlateNumber
-        : args.plateNumber.trim();
+    final plate = args.plateNumber.trim();
+    final plateLabel = plate.isEmpty ? strings.notAvailable : plate;
     final lottieSize = context.isSmallScreen
         ? context.height(108)
         : context.height(124);
@@ -104,7 +101,7 @@ class PlateOcrResultScreen extends StatelessWidget {
                               ),
                               context.addVerticalSpace(16),
                               Text(
-                                plate,
+                                plateLabel,
                                 textAlign: TextAlign.center,
                                 style: context.font34Bold?.copyWith(
                                   color: colors.textPrimaryColor,
@@ -135,17 +132,19 @@ class PlateOcrResultScreen extends StatelessWidget {
                 AppPrimaryButton(
                   label: strings.confirm,
                   prominent: true,
-                  onPressed: () {
-                    if (onConfirm != null) {
-                      onConfirm!(plate);
-                      return;
-                    }
-                    VehicleLookupScreen.open(
-                      context,
-                      claimId: args.claimId,
-                      plateNumber: plate,
-                    );
-                  },
+                  onPressed: plate.isEmpty
+                      ? null
+                      : () {
+                          if (onConfirm != null) {
+                            onConfirm!(plate);
+                            return;
+                          }
+                          VehicleLookupScreen.open(
+                            context,
+                            claimId: args.claimId,
+                            plateNumber: plate,
+                          );
+                        },
                 ),
                 context.addVerticalSpace(10),
                 AppOutlinedButton(

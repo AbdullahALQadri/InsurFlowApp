@@ -55,7 +55,7 @@ class InspectionNavigator {
       case InspectionStepId.submission:
         return ClaimValidationScreen.open(
           context,
-          summary: ClaimReviewSummary.ready(claimId: claimId),
+          summary: ClaimReviewSummary.pending(claimId: claimId),
         );
     }
   }
@@ -70,7 +70,7 @@ class InspectionNavigator {
     if (nextIndex >= InspectionStepId.values.length) {
       return ClaimValidationScreen.open(
         context,
-        summary: ClaimReviewSummary.ready(claimId: claimId),
+        summary: ClaimReviewSummary.pending(claimId: claimId),
       );
     }
     return openStep(

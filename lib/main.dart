@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,6 +9,7 @@ import 'package:insurflow/core/global/design_system/theme_data/app_theme.dart';
 import 'package:insurflow/core/l10n/app_strings.dart';
 import 'package:insurflow/core/routing/app_router.dart';
 import 'package:insurflow/core/routing/routes.dart';
+import 'package:insurflow/firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,6 +21,9 @@ Future<void> main() async {
       systemNavigationBarColor: AppSplashColors.midnight,
       systemNavigationBarIconBrightness: Brightness.light,
     ),
+  );
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(const InsurFlowApp());
 }

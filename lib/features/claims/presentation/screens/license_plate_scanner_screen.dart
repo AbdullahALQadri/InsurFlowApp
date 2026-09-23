@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:insurflow/core/extensions/navigation.dart';
 import 'package:insurflow/core/l10n/app_strings.dart';
 import 'package:insurflow/core/routing/routes.dart';
-import 'package:insurflow/features/claims/presentation/screens/plate_ocr_result_screen.dart';
+import 'package:insurflow/features/claims/presentation/screens/manual_plate_entry_screen.dart';
 import 'package:insurflow/features/claims/presentation/widgets/license_plate_scan_overlay.dart';
 
 class LicensePlateScannerScreen extends StatefulWidget {
@@ -152,17 +152,14 @@ class _LicensePlateScannerScreenState extends State<LicensePlateScannerScreen>
     }
     if (!mounted) return;
 
-    final confirmed = await PlateOcrResultScreen.open(
-      context,
-      claimId: widget.claimId,
-      plateNumber: PlateOcrResultScreen.demoPlateNumber,
+    // TODO(api): The Postman collection has no plate OCR endpoint, so a
+    // captured photo yields no plate text. Replace this with the real
+    // OCR call once the endpoint exists — never invent a detected plate.
+    setState(() => _capturing = false);
+    context.pushReplacementNamed(
+      Routes.manualPlateEntryScreen,
+      arguments: ManualPlateEntryArgs(claimId: widget.claimId),
     );
-    if (!mounted) return;
-    if (confirmed is String && confirmed.trim().isNotEmpty) {
-      Navigator.of(context).pop(confirmed);
-    } else {
-      setState(() => _capturing = false);
-    }
   }
 
   @override

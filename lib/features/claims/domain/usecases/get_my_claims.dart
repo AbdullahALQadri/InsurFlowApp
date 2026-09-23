@@ -13,4 +13,8 @@ class GetMyClaimsUseCase implements UseCase<List<Claim>, NoParams> {
   Future<Either<Failure, List<Claim>>> call(NoParams params) {
     return _repository.getMyClaims();
   }
+
+  Future<Either<Failure, List<Claim>>> byStatus(String? status) {
+    return _repository.getMyClaims(status: status);
+  }
 }

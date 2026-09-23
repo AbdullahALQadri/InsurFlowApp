@@ -84,9 +84,13 @@ class _CapturingLocationScreenState extends State<CapturingLocationScreen>
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      // TODO(gps): No device location plugin is installed yet, so no
+      // fix was acquired. Hand a pending (empty) location to the screen
+      // instead of fabricating coordinates, and wire the real GPS fix to
+      // PUT /claims/{id}/location when the plugin is added.
       AccidentLocationScreen.open(
         context,
-        location: AccidentLocation.demo(claimId: widget.args.claimId),
+        location: AccidentLocation.pending(claimId: widget.args.claimId),
         replace: true,
       );
     });

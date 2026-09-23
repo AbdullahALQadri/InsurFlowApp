@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1051824737362",
+    "project_id": "insurflow-53162",
+    "storage_bucket": "insurflow-53162.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1051824737362:android:e82aabf63f3e73df2b638b",
+        "android_client_info": {
+          "package_name": "com.insur.insurflow"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBbrMYBGa8vNFlWv3owRXPd3jRbnagr9f4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

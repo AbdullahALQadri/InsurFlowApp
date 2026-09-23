@@ -8,6 +8,17 @@ import 'package:insurflow/features/claims/presentation/screens/accident_location
 import 'package:insurflow/features/claims/presentation/widgets/accident_location_map_card.dart';
 
 void main() {
+  AccidentLocation locationFixture() {
+    return AccidentLocation(
+      claimId: 'CLM-0001',
+      street: 'Al-Quds Street',
+      city: 'Tulkarm',
+      latitude: 32.31,
+      longitude: 35.03,
+      capturedAt: DateTime(2026, 8, 24, 16, 42),
+    );
+  }
+
   Widget wrap(Widget child) {
     return MaterialApp(
       theme: AppTheme.lightTheme,
@@ -38,9 +49,7 @@ void main() {
   ) async {
     await pumpScreen(
       tester,
-      AccidentLocationScreen(
-        location: AccidentLocation.demo(claimId: 'CLM-0001'),
-      ),
+      AccidentLocationScreen(location: locationFixture()),
     );
 
     expect(find.text('Accident Location'), findsOneWidget);
@@ -66,7 +75,7 @@ void main() {
     await pumpScreen(
       tester,
       AccidentLocationScreen(
-        location: AccidentLocation.demo(claimId: 'CLM-0001'),
+        location: locationFixture(),
         onConfirm: (location) => confirmed = location,
       ),
     );
@@ -83,7 +92,7 @@ void main() {
     await pumpScreen(
       tester,
       AccidentLocationScreen(
-        location: AccidentLocation.demo(claimId: 'CLM-0001'),
+        location: locationFixture(),
         onRefresh: () => refreshed = true,
       ),
     );

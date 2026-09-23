@@ -19,25 +19,26 @@ class AccidentLocation {
   final DateTime capturedAt;
   final LocationMethod method;
 
-  static const demoStreet = 'Al-Quds Street';
-  static const demoCity = 'Tulkarm';
-  static const demoLatitude = 32.31;
-  static const demoLongitude = 35.03;
+  /// No fix has been acquired yet: street/city are empty and the
+  /// coordinates are the null island sentinel (see [hasCoordinates]).
+  bool get hasCoordinates =>
+      !(latitude == 0 && longitude == 0) || street.trim().isNotEmpty;
 
   String get coordinatesLabel =>
       '${latitude.toStringAsFixed(4)}, ${longitude.toStringAsFixed(4)}';
 
-  factory AccidentLocation.demo({
-    required String claimId,
-    DateTime? capturedAt,
-  }) {
+  /// TODO(gps): No device location plugin is installed yet, and
+  /// PUT /claims/{id}/location must receive a real GPS fix. This
+  /// placeholder carries no fabricated address or coordinates — the
+  /// UI shows "not available" until a real fix is captured.
+  factory AccidentLocation.pending({required String claimId}) {
     return AccidentLocation(
       claimId: claimId,
-      street: demoStreet,
-      city: demoCity,
-      latitude: demoLatitude,
-      longitude: demoLongitude,
-      capturedAt: capturedAt ?? DateTime(2026, 8, 24, 16, 42),
+      street: '',
+      city: '',
+      latitude: 0,
+      longitude: 0,
+      capturedAt: DateTime.now(),
     );
   }
 }

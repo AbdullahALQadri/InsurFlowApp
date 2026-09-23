@@ -1,14 +1,17 @@
 import 'package:insurflow/features/claims/domain/accident_details.dart';
 import 'package:insurflow/features/claims/domain/claim_documents.dart';
+import 'package:insurflow/features/claims/domain/inspection_progress.dart';
+import 'package:insurflow/features/claims/domain/inspection_progress_store.dart';
 import 'package:insurflow/features/claims/domain/vehicle_evidence.dart';
 import 'package:insurflow/features/claims/domain/vehicle_lookup_result.dart';
 
 /// Snapshot of inspection fields shown on the final claim review.
 ///
 /// TODO(api):
-/// Waiting for a Backend submit-claim endpoint in the Postman collection.
-/// This review is assembled from local inspection data until a reliable
-/// submit contract exists. Do not invent POST routes or response fields.
+/// Vehicle, customer, and policy values must come from
+/// `GET /claims/{id}` (or a persisted local lookup result). Until that
+/// contract is wired, [ClaimReviewSummary.pending] reports those fields
+/// as empty instead of fabricating them. Do not invent response fields.
 enum ClaimReviewSectionId {
   vehicle,
   customer,
@@ -48,7 +51,9 @@ class ClaimReviewSummary {
   final String customerName;
   final String policyNumber;
   final PolicyStatus policyStatus;
-  final AccidentType accidentType;
+
+  /// Null until the accident details step has actually been completed.
+  final AccidentType? accidentType;
   final bool accidentDateComplete;
   final bool accidentTimeComplete;
   final bool accidentDescriptionComplete;
@@ -72,23 +77,36 @@ class ClaimReviewSummary {
       documentsCompleted >= documentsTotal &&
       signatureCompleted;
 
-  factory ClaimReviewSummary.ready({required String claimId}) {
-    final vehicle = VehicleLookupResult.demo(claimId: claimId);
+  /// Review state assembled only from facts the app actually knows:
+  /// the local inspection-step progress. Nothing here is invented —
+  /// vehicle/customer/policy stay empty until the backend contract
+  /// provides them, so `isReady` honestly reports "not ready".
+  factory ClaimReviewSummary.pending({required String claimId}) {
+    final reached = InspectionProgressStore.instance.indexFor(claimId) ?? 0;
+    bool done(InspectionStepId step) => reached > step.index;
+
     return ClaimReviewSummary(
       claimId: claimId,
       claimNumber: claimId,
-      licensePlate: vehicle.licensePlate,
-      makeModel: vehicle.makeModel,
-      customerName: vehicle.customerName,
-      policyNumber: vehicle.policyNumber,
-      policyStatus: vehicle.policyStatus,
-      accidentType: AccidentType.rearEnd,
-      locationCaptured: true,
-      evidenceCompleted: VehicleEvidence.requiredCount,
+      licensePlate: '',
+      makeModel: '',
+      customerName: '',
+      policyNumber: '',
+      policyStatus: PolicyStatus.unknown,
+      accidentType: null,
+      accidentDateComplete: done(InspectionStepId.accident),
+      accidentTimeComplete: done(InspectionStepId.accident),
+      accidentDescriptionComplete: done(InspectionStepId.accident),
+      locationCaptured: done(InspectionStepId.location),
+      evidenceCompleted: done(InspectionStepId.evidence)
+          ? VehicleEvidence.requiredCount
+          : 0,
       evidenceTotal: VehicleEvidence.requiredCount,
-      documentsCompleted: ClaimDocuments.requiredCount,
+      documentsCompleted: done(InspectionStepId.documents)
+          ? ClaimDocuments.requiredCount
+          : 0,
       documentsTotal: ClaimDocuments.requiredCount,
-      signatureCompleted: true,
+      signatureCompleted: done(InspectionStepId.signature),
     );
   }
 }

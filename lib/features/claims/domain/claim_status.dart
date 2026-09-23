@@ -1,5 +1,13 @@
 enum ClaimStatus {
   newClaim,
+
+  /// `PENDING_ACCEPTANCE` returned by `GET /claims`.
+  ///
+  /// TODO(api): No accept-claim endpoint or acceptance rule is present
+  /// in the Flutter project or confirmed in the Postman collection, so
+  /// this status is represented faithfully but grants no start/continue
+  /// action. Do not treat it as ASSIGNED until the contract confirms it.
+  pendingAcceptance,
   assigned,
   inProgress,
   submitted,
@@ -14,6 +22,8 @@ enum ClaimStatus {
     switch (this) {
       case ClaimStatus.newClaim:
         return 'NEW';
+      case ClaimStatus.pendingAcceptance:
+        return 'PENDING ACCEPTANCE';
       case ClaimStatus.assigned:
         return 'ASSIGNED';
       case ClaimStatus.inProgress:
@@ -39,6 +49,8 @@ enum ClaimStatus {
     switch (this) {
       case ClaimStatus.newClaim:
         return 'New';
+      case ClaimStatus.pendingAcceptance:
+        return 'Pending Acceptance';
       case ClaimStatus.assigned:
         return 'Assigned';
       case ClaimStatus.inProgress:
@@ -69,6 +81,10 @@ enum ClaimStatus {
       case ClaimStatus.assigned:
         return 2;
       case ClaimStatus.newClaim:
+        // Informational: grouped with un-started claims until the
+        // acceptance workflow is confirmed by the backend contract.
+        return 3;
+      case ClaimStatus.pendingAcceptance:
         return 3;
       case ClaimStatus.submitted:
         return 4;
@@ -115,6 +131,8 @@ enum ClaimStatus {
     switch (normalized) {
       case 'NEW':
         return ClaimStatus.newClaim;
+      case 'PENDING_ACCEPTANCE':
+        return ClaimStatus.pendingAcceptance;
       case 'ASSIGNED':
         return ClaimStatus.assigned;
       case 'IN_PROGRESS':

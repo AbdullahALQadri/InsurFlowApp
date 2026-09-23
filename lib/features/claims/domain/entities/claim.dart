@@ -1,5 +1,7 @@
 import 'package:insurflow/features/claims/domain/claim_preview.dart';
 import 'package:insurflow/features/claims/domain/claim_status.dart';
+import 'package:insurflow/features/claims/domain/entities/claim_assignee.dart';
+import 'package:insurflow/features/claims/domain/entities/incident_coordinates.dart';
 import 'package:insurflow/features/claims/domain/inspection_progress.dart';
 
 class Claim {
@@ -20,6 +22,9 @@ class Claim {
     this.notes,
     this.assignedBy,
     this.assignedAt,
+    this.assignedTo,
+    this.fieldAdjuster,
+    this.incidentCoordinates,
     this.createdAt,
     this.updatedAt,
   });
@@ -38,8 +43,20 @@ class Claim {
   final String? adjusterId;
   final String? priority;
   final String? notes;
+
+  /// Person who assigned the claim. Not present in the current
+  /// `GET /claims` response — never populate this from `assignedTo`.
   final String? assignedBy;
   final DateTime? assignedAt;
+
+  /// Person the claim is assigned to (`assignedTo` in the API).
+  final ClaimAssignee? assignedTo;
+
+  /// Field adjuster on the claim (`fieldAdjuster` in the API).
+  final ClaimAssignee? fieldAdjuster;
+
+  /// GPS fix (`incidentCoordinates` in the API); null when absent.
+  final IncidentCoordinates? incidentCoordinates;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -92,6 +109,9 @@ class Claim {
     String? notes,
     String? assignedBy,
     DateTime? assignedAt,
+    ClaimAssignee? assignedTo,
+    ClaimAssignee? fieldAdjuster,
+    IncidentCoordinates? incidentCoordinates,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -112,6 +132,9 @@ class Claim {
       notes: notes ?? this.notes,
       assignedBy: assignedBy ?? this.assignedBy,
       assignedAt: assignedAt ?? this.assignedAt,
+      assignedTo: assignedTo ?? this.assignedTo,
+      fieldAdjuster: fieldAdjuster ?? this.fieldAdjuster,
+      incidentCoordinates: incidentCoordinates ?? this.incidentCoordinates,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
