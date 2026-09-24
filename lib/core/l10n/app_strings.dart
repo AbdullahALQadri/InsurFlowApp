@@ -154,6 +154,28 @@ class AppStrings {
   String get loadingClaimDetails =>
       isArabic ? 'جاري تحميل تفاصيل المطالبة...' : 'Loading claim details...';
   String get claimDetails => isArabic ? 'تفاصيل المطالبة' : 'Claim Details';
+
+  // --- Assignment acceptance (POST /claims/{id}/accept-assignment) -------
+
+  String get acceptAssignmentTitle =>
+      isArabic ? 'هل أنت متاح؟' : 'Are you available?';
+  String get acceptAssignmentBody => isArabic
+      ? 'تم إسناد هذه المطالبة إليك. هل يمكنك قبولها والبدء بالمعاينة؟'
+      : 'This claim has been offered to you. Can you take it on and inspect it?';
+  String get acceptAssignment => isArabic ? 'قبول' : 'Accept';
+  String get declineAssignment => isArabic ? 'ليس الآن' : 'Not now';
+  String get assignmentAccepted => isArabic
+      ? 'تم قبول الإسناد. المطالبة جاهزة للمعاينة.'
+      : 'Assignment accepted. The claim is ready for inspection.';
+  String get assignmentAcceptFailed => isArabic
+      ? 'تعذّر قبول الإسناد. حاول مرة أخرى.'
+      : 'Could not accept the assignment. Please try again.';
+  String get assignmentNoLongerPending => isArabic
+      ? 'لم تعد هذه المطالبة بانتظار القبول.'
+      : 'This claim is no longer awaiting acceptance.';
+  String get awaitingYourAcceptance => isArabic
+      ? 'بانتظار قبولك لبدء المعاينة.'
+      : 'Awaiting your acceptance before the inspection can start.';
   String get createdDate => isArabic ? 'تاريخ الإنشاء' : 'Created date';
   String get startingClaim =>
       isArabic ? 'جاري بدء المطالبة...' : 'Starting claim...';

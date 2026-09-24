@@ -21,6 +21,8 @@ import 'package:insurflow/features/claims/presentation/widgets/claim_status_tran
 import 'package:insurflow/features/claims/presentation/widgets/start_claim_confirmation_sheet.dart';
 import 'package:insurflow/features/claims/presentation/screens/vehicle_identification_screen.dart';
 import 'package:insurflow/features/claims/presentation/utils/inspection_navigator.dart';
+import 'package:insurflow/core/error/failures.dart';
+import 'package:insurflow/features/claims/presentation/widgets/assignment_availability_dialog.dart';
 
 class ClaimDetailsScreen extends StatelessWidget {
   const ClaimDetailsScreen({super.key, required this.claimId});
@@ -90,6 +92,22 @@ class _ClaimDetailsView extends StatelessWidget {
         ),
         body: BlocConsumer<ClaimDetailsBloc, ClaimDetailsState>(
           listener: (context, state) {
+            if (state is ClaimDetailsLoadSuccess) {
+              _handleAcceptanceState(context, state, strings);
+            }
+            if (state is ClaimDetailsLoadSuccess &&
+                state.hasPromptedAcceptance &&
+                !state.isAcceptingAssignment &&
+                state.acceptFailure == null &&
+                state.claim.status.canStart) {
+              // The server moved the claim to ASSIGNED, so it is now
+              // this adjuster's to inspect.
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  SnackBar(content: Text(strings.assignmentAccepted)),
+                );
+            }
             if (state is ClaimDetailsStarted) {
               ScaffoldMessenger.of(
                 context,
@@ -120,9 +138,13 @@ class _ClaimDetailsView extends StatelessWidget {
               return _DetailsBody(
                 claim: state.claim,
                 isStarting: state.isStarting,
+                isAccepting: state.isAcceptingAssignment,
                 startError: state.startFailure == null
                     ? null
                     : strings.startMessageFor(state.startFailure!),
+                acceptError: state.acceptFailure == null
+                    ? null
+                    : _acceptMessage(strings, state.acceptFailure!),
               );
             }
             if (state is ClaimDetailsStarted) {
@@ -136,16 +158,80 @@ class _ClaimDetailsView extends StatelessWidget {
   }
 }
 
+/// Offers the availability dialog for a claim awaiting acceptance, and
+/// surfaces the outcome of an accept attempt.
+///
+/// The prompt is offered once per loaded claim: `hasPromptedAcceptance`
+/// is set as soon as it is shown, so declining does not re-open it on
+/// the next rebuild. The CTA remains available for a change of mind.
+void _handleAcceptanceState(
+  BuildContext context,
+  ClaimDetailsLoadSuccess state,
+  AppStrings strings,
+) {
+  final failure = state.acceptFailure;
+  if (failure != null) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text(_acceptMessage(strings, failure))),
+      );
+    return;
+  }
+
+  if (state.claim.status.awaitsAcceptance) {
+    if (state.hasPromptedAcceptance || state.isAcceptingAssignment) return;
+    final bloc = context.read<ClaimDetailsBloc>();
+    // Mark it offered before awaiting, so a rebuild mid-dialog cannot
+    // stack a second one.
+    bloc.add(const ClaimAcceptancePrompted());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!context.mounted) return;
+      await _askAvailability(
+        context,
+        claimNumber: state.claim.claimNumber,
+        bloc: bloc,
+      );
+    });
+  }
+}
+
+Future<void> _askAvailability(
+  BuildContext context, {
+  required String? claimNumber,
+  required ClaimDetailsBloc bloc,
+}) async {
+  final accepted = await AssignmentAvailabilityDialog.show(
+    context,
+    claimNumber: claimNumber,
+  );
+  // Declining closes the dialog and calls nothing.
+  if (!accepted) return;
+  bloc.add(const ClaimAssignmentAcceptRequested());
+}
+
+/// The backend answers 409 when the claim already moved on, which is a
+/// different situation from a network or server problem.
+String _acceptMessage(AppStrings strings, Failure failure) {
+  if (failure is ValidationFailure) return strings.assignmentNoLongerPending;
+  if (failure is NetworkFailure) return strings.messageFor(failure);
+  return strings.assignmentAcceptFailed;
+}
+
 class _DetailsBody extends StatelessWidget {
   const _DetailsBody({
     required this.claim,
     required this.isStarting,
     this.startError,
+    this.isAccepting = false,
+    this.acceptError,
   });
 
   final Claim claim;
   final bool isStarting;
   final String? startError;
+  final bool isAccepting;
+  final String? acceptError;
 
   @override
   Widget build(BuildContext context) {
@@ -200,6 +286,8 @@ class _DetailsBody extends StatelessWidget {
               padding: context.spaceSymmetric(vertical: 16, horizontal: 20),
               child: _ClaimDetailsCta(
                 claim: claim,
+                isAccepting: isAccepting,
+                acceptError: acceptError,
                 claimNumber: claim.displayNumber,
                 // The confirmation sheet names the vehicle; before the
                 // registry lookup only the plate is known, so that is
@@ -226,6 +314,8 @@ class _ClaimDetailsCta extends StatelessWidget {
     required this.vehicle,
     required this.isStarting,
     this.startError,
+    this.isAccepting = false,
+    this.acceptError,
   });
 
   final Claim claim;
@@ -233,11 +323,55 @@ class _ClaimDetailsCta extends StatelessWidget {
   final String vehicle;
   final bool isStarting;
   final String? startError;
+  final bool isAccepting;
+  final String? acceptError;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final strings = AppStrings.of(context);
+
+    // A claim waiting on this adjuster offers acceptance instead of the
+    // locked hint; the inspection actions unlock once it is ASSIGNED.
+    if (claim.status.awaitsAcceptance) {
+      return Column(
+        children: [
+          if (acceptError != null) ...[
+            Text(
+              acceptError!,
+              textAlign: TextAlign.center,
+              style: context.font14Regular?.copyWith(
+                color: colors.inputErrorBorderColor,
+              ),
+            ),
+            context.addVerticalSpace(10),
+          ],
+          AppPrimaryButton(
+            key: const Key('accept-assignment-cta'),
+            label: strings.acceptAssignment,
+            prominent: true,
+            isLoading: isAccepting,
+            onPressed: isAccepting
+                ? null
+                : () => _askAvailability(
+                    context,
+                    claimNumber: claim.claimNumber,
+                    bloc: context.read<ClaimDetailsBloc>(),
+                  ),
+          ),
+          context.addVerticalSpace(10),
+          Text(
+            strings.awaitingYourAcceptance,
+            textAlign: TextAlign.center,
+            style: context.font14Regular?.copyWith(
+              color: colors.textSecondaryColor,
+              height: 1.35,
+              fontSize: context.width(12),
+            ),
+          ),
+        ],
+      );
+    }
 
     if (claim.status.canStart) {
       return Column(

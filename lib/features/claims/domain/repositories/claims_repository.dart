@@ -8,6 +8,8 @@ abstract class ClaimsRepository {
 
   Future<Either<Failure, Claim>> getClaimDetails(String claimId);
 
+  Future<Either<Failure, Claim>> acceptAssignment(String claimId);
+
   Future<Either<Failure, Claim>> startClaim(String claimId);
 
   Future<Either<Failure, Claim>> submitClaim(String claimId);

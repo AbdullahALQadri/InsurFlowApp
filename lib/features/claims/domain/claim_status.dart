@@ -3,10 +3,9 @@ enum ClaimStatus {
 
   /// `PENDING_ACCEPTANCE` returned by `GET /claims`.
   ///
-  /// TODO(api): No accept-claim endpoint or acceptance rule is present
-  /// in the Flutter project or confirmed in the Postman collection, so
-  /// this status is represented faithfully but grants no start/continue
-  /// action. Do not treat it as ASSIGNED until the contract confirms it.
+  /// The adjuster must accept the assignment before any inspection
+  /// action unlocks — see [awaitsAcceptance]. Accepting moves the claim
+  /// to ASSIGNED via `POST /claims/{id}/accept-assignment`.
   pendingAcceptance,
   assigned,
   inProgress,
@@ -101,6 +100,12 @@ enum ClaimStatus {
     }
   }
 
+  /// The officer has offered this claim and is waiting for the
+  /// adjuster to say whether they can take it.
+  ///
+  /// `POST /claims/{id}/accept-assignment` moves it to ASSIGNED.
+  bool get awaitsAcceptance => this == ClaimStatus.pendingAcceptance;
+
   bool get canStart => this == ClaimStatus.assigned;
 
   /// POST /claims/{id}/inspection/start — ASSIGNED or CORRECTION_REQUIRED.
@@ -132,6 +137,10 @@ enum ClaimStatus {
       case 'NEW':
         return ClaimStatus.newClaim;
       case 'PENDING_ACCEPTANCE':
+      // The deployed API returns PENDING_ACCEPTANCE; this spelling is
+      // accepted too so a backend rename does not silently disable the
+      // acceptance prompt.
+      case 'PENDING_ACCEPTED':
         return ClaimStatus.pendingAcceptance;
       case 'ASSIGNED':
         return ClaimStatus.assigned;

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:insurflow/core/error/failures.dart';
 import 'package:insurflow/features/claims/domain/claim_status.dart';
 import 'package:insurflow/features/claims/domain/entities/claim.dart';
+import 'package:insurflow/features/claims/domain/usecases/accept_assignment.dart';
 import 'package:insurflow/features/claims/domain/usecases/get_claim_details.dart';
 import 'package:insurflow/features/claims/domain/usecases/start_claim.dart';
 import 'package:insurflow/features/claims/presentation/bloc/claim_details_bloc.dart';
@@ -16,11 +17,15 @@ class _MockGetClaimDetailsUseCase extends Mock
 
 class _MockStartClaimUseCase extends Mock implements StartClaimUseCase {}
 
+class _MockAcceptAssignmentUseCase extends Mock
+    implements AcceptAssignmentUseCase {}
+
 class _FakeClaim extends Fake implements Claim {}
 
 void main() {
   late _MockGetClaimDetailsUseCase getClaimDetailsUseCase;
   late _MockStartClaimUseCase startClaimUseCase;
+  late _MockAcceptAssignmentUseCase acceptAssignmentUseCase;
 
   setUpAll(() {
     registerFallbackValue(_FakeClaim());
@@ -29,12 +34,14 @@ void main() {
   setUp(() {
     getClaimDetailsUseCase = _MockGetClaimDetailsUseCase();
     startClaimUseCase = _MockStartClaimUseCase();
+    acceptAssignmentUseCase = _MockAcceptAssignmentUseCase();
   });
 
   ClaimDetailsBloc buildBloc() {
     return ClaimDetailsBloc(
       getClaimDetailsUseCase: getClaimDetailsUseCase,
       startClaimUseCase: startClaimUseCase,
+      acceptAssignmentUseCase: acceptAssignmentUseCase,
     );
   }
 

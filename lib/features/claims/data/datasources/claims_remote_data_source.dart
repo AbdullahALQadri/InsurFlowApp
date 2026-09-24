@@ -8,6 +8,8 @@ abstract class ClaimsRemoteDataSource {
 
   Future<Claim> getClaimDetails(String claimId);
 
+  Future<Claim> acceptAssignment(String claimId);
+
   Future<Claim> startClaim(String claimId);
 
   Future<Claim> submitClaim(String claimId);
@@ -85,6 +87,27 @@ class ClaimsRemoteDataSourceImpl implements ClaimsRemoteDataSource {
       );
     }
     return claim;
+  }
+
+  /// `POST /claims/{id}/accept-assignment`
+  ///
+  /// Verified against the live backend as a FIELD_ADJUSTER:
+  /// * no request body is required;
+  /// * 200 -> `{success, message: "Assignment accepted successfully",
+  ///   data: {id, claimNumber, status: "ASSIGNED", assignedTo,
+  ///   assignedBy, assignedAt}}` — note `assignedTo`/`assignedBy` are
+  ///   bare id strings here, unlike the nested objects the claim
+  ///   endpoints return;
+  /// * 409 `INVALID_STATUS_TRANSITION` when the claim is not in
+  ///   PENDING_ACCEPTANCE;
+  /// * 401 without a bearer token.
+  ///
+  /// The response is a partial claim, so the full record is re-read —
+  /// the same approach `startClaim` and `submitClaim` use.
+  @override
+  Future<Claim> acceptAssignment(String claimId) async {
+    await _dio.post<dynamic>('/claims/$claimId/accept-assignment');
+    return getClaimDetails(claimId);
   }
 
   @override

@@ -16,6 +16,7 @@ import 'package:insurflow/features/authentication/presentation/bloc/auth_bloc.da
 import 'package:insurflow/features/claims/data/datasources/claims_remote_data_source.dart';
 import 'package:insurflow/features/claims/data/repositories/claims_repository_impl.dart';
 import 'package:insurflow/features/claims/domain/repositories/claims_repository.dart';
+import 'package:insurflow/features/claims/domain/usecases/accept_assignment.dart';
 import 'package:insurflow/features/claims/domain/usecases/get_claim_details.dart';
 import 'package:insurflow/features/claims/domain/usecases/get_my_claims.dart';
 import 'package:insurflow/features/claims/domain/usecases/lookup_vehicle.dart';
@@ -50,6 +51,7 @@ class AppDependencies {
     required this.restoreSessionUseCase,
     required this.getMyClaimsUseCase,
     required this.getClaimDetailsUseCase,
+    required this.acceptAssignmentUseCase,
     required this.startClaimUseCase,
     required this.submitClaimUseCase,
     required this.lookupVehicleUseCase,
@@ -76,6 +78,7 @@ class AppDependencies {
   final RestoreSessionUseCase restoreSessionUseCase;
   final GetMyClaimsUseCase getMyClaimsUseCase;
   final GetClaimDetailsUseCase getClaimDetailsUseCase;
+  final AcceptAssignmentUseCase acceptAssignmentUseCase;
   final StartClaimUseCase startClaimUseCase;
   final SubmitClaimUseCase submitClaimUseCase;
   final LookupVehicleUseCase lookupVehicleUseCase;
@@ -133,6 +136,7 @@ class AppDependencies {
       restoreSessionUseCase: RestoreSessionUseCase(authRepository),
       getMyClaimsUseCase: GetMyClaimsUseCase(claimsRepository),
       getClaimDetailsUseCase: GetClaimDetailsUseCase(claimsRepository),
+      acceptAssignmentUseCase: AcceptAssignmentUseCase(claimsRepository),
       startClaimUseCase: StartClaimUseCase(claimsRepository),
       submitClaimUseCase: SubmitClaimUseCase(claimsRepository),
       lookupVehicleUseCase: LookupVehicleUseCase(claimsRepository),
@@ -172,6 +176,7 @@ class AppDependencies {
     return ClaimDetailsBloc(
       getClaimDetailsUseCase: getClaimDetailsUseCase,
       startClaimUseCase: startClaimUseCase,
+      acceptAssignmentUseCase: acceptAssignmentUseCase,
     );
   }
 
