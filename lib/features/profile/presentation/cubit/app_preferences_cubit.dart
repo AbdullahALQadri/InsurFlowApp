@@ -20,6 +20,19 @@ class AppPreferencesCubit extends Cubit<AppPreferences> {
     await _store.write(updated);
   }
 
+  /// A null [accent] restores the default brand colour; any other
+  /// value switches the app to the custom theme, in whichever
+  /// brightness [AppPreferences.themeMode] currently selects.
+  Future<void> setAccent(Color? accent) async {
+    final value = accent?.toARGB32();
+    if (value == state.accentValue) return;
+    final updated = value == null
+        ? state.copyWith(clearAccent: true)
+        : state.copyWith(accentValue: value);
+    emit(updated);
+    await _store.write(updated);
+  }
+
   /// A null [localeCode] follows the device language.
   Future<void> setLocale(String? localeCode) async {
     if (localeCode == state.localeCode) return;

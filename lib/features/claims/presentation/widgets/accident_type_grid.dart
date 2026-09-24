@@ -46,7 +46,7 @@ class AccidentTypeGrid extends StatelessWidget {
               ' *',
               style: context.font14Bold?.copyWith(
                 color: attention
-                    ? const Color(0xFFD97706)
+                    ? colors.warningColor
                     : colors.primaryColor,
                 fontWeight: FontWeightHelper.bold,
               ),
@@ -93,7 +93,7 @@ class AccidentTypeGrid extends StatelessWidget {
           Text(
             helperText!,
             style: context.font14Regular?.copyWith(
-              color: const Color(0xFFD97706),
+              color: context.colors.warningColor,
               height: 1.35,
             ),
           ),
@@ -123,7 +123,7 @@ class _TypeTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    const warning = Color(0xFFD97706);
+    final warning = colors.warningColor;
     final border = invalid
         ? colors.inputErrorBorderColor
         : attention

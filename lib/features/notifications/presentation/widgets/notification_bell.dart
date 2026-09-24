@@ -71,7 +71,7 @@ class NotificationBell extends StatelessWidget {
                             unread > 9 ? '9+' : '$unread',
                             textAlign: TextAlign.center,
                             style: context.font14Bold?.copyWith(
-                              color: Colors.white,
+                              color: colors.onStatusColor,
                               fontWeight: FontWeightHelper.bold,
                               fontSize: context.width(9),
                               height: 1.2,

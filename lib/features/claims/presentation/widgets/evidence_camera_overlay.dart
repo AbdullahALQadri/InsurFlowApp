@@ -6,6 +6,7 @@ import 'package:insurflow/core/global/design_system/app_color/app_splash_colors.
 import 'package:insurflow/core/global/design_system/font_weight/font_weight_helper.dart';
 import 'package:insurflow/core/l10n/app_strings.dart';
 import 'package:insurflow/features/claims/domain/vehicle_evidence.dart';
+import 'package:insurflow/core/global/design_system/tokens/app_palette.dart';
 
 class EvidenceFrameGeometry {
   EvidenceFrameGeometry._();
@@ -115,11 +116,14 @@ class _TopChrome extends StatelessWidget {
     final strings = AppStrings.of(context);
 
     return DecoratedBox(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xB305080F), Color(0x0005080F)],
+          colors: [
+            AppPalette.immersiveSurface.changeOpacity(0.70),
+            AppPalette.immersiveSurface.changeOpacity(0),
+          ],
         ),
       ),
       child: SafeArea(
@@ -144,7 +148,10 @@ class _TopChrome extends StatelessWidget {
                         color: AppSplashColors.textPrimary,
                         fontWeight: FontWeightHelper.semiBold,
                         shadows: const [
-                          Shadow(color: Color(0xDD000000), blurRadius: 8),
+                          Shadow(
+                            color: AppPalette.immersiveScrim,
+                            blurRadius: 8,
+                          ),
                         ],
                       ),
                     ),
@@ -161,7 +168,7 @@ class _TopChrome extends StatelessWidget {
                   fontWeight: FontWeightHelper.medium,
                   height: 1.3,
                   shadows: const [
-                    Shadow(color: Color(0xCC000000), blurRadius: 6),
+                    Shadow(color: AppPalette.immersiveScrim, blurRadius: 6),
                   ],
                 ),
               ),
@@ -197,11 +204,14 @@ class _BottomChrome extends StatelessWidget {
     return Align(
       alignment: Alignment.bottomCenter,
       child: DecoratedBox(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
-            colors: [Color(0xF205080F), Color(0x0005080F)],
+            colors: [
+              AppPalette.immersiveSurface.changeOpacity(0.95),
+              AppPalette.immersiveSurface.changeOpacity(0),
+            ],
           ),
         ),
         child: SafeArea(
@@ -213,7 +223,7 @@ class _BottomChrome extends StatelessWidget {
               children: [
                 DecoratedBox(
                   decoration: BoxDecoration(
-                    color: const Color(0xCC141C2A),
+                    color: AppPalette.immersivePanel,
                     borderRadius: context.circularRadius(14),
                     border: Border.all(
                       color: AppSplashColors.cyan.changeOpacity(0.22),
@@ -294,7 +304,7 @@ class _ChromeIconButton extends StatelessWidget {
       child: Material(
         color: active
             ? AppSplashColors.cyan.changeOpacity(0.28)
-            : const Color(0x66000000),
+            : AppPalette.immersiveScrim.changeOpacity(0.4),
         shape: const CircleBorder(),
         child: InkWell(
           customBorder: const CircleBorder(),
@@ -339,7 +349,10 @@ class _CaptureButton extends StatelessWidget {
           child: DecoratedBox(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: _ringWidth),
+              border: Border.all(
+                color: AppPalette.immersiveInk,
+                width: _ringWidth,
+              ),
               boxShadow: [
                 BoxShadow(
                   color: AppSplashColors.cyan.changeOpacity(0.22),
@@ -351,7 +364,7 @@ class _CaptureButton extends StatelessWidget {
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white,
+                  color: AppPalette.immersiveInk,
                   boxShadow: [
                     BoxShadow(
                       color: AppSplashColors.glow.changeOpacity(0.28),

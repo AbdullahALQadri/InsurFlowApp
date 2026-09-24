@@ -7,6 +7,7 @@ import 'package:insurflow/core/global/design_system/app_color/claim_status_color
 import 'package:insurflow/core/global/design_system/font_weight/font_weight_helper.dart';
 import 'package:insurflow/core/global/design_system/theme_data/theme_extension.dart';
 import 'package:insurflow/core/l10n/app_strings.dart';
+import 'package:insurflow/core/global/design_system/tokens/app_palette.dart';
 
 class AccidentLocationMapCard extends StatelessWidget {
   const AccidentLocationMapCard({super.key});
@@ -19,6 +20,25 @@ class AccidentLocationMapCard extends StatelessWidget {
     final strings = AppStrings.of(context);
     final radius = context.circularRadius(20);
     final markerSize = context.width(48);
+    // The sketch map follows the theme: on a dark surface a light map
+    // would glare, so the tones are derived from the current scheme.
+    final isDark = context.isDarkTheme;
+    final mapFill = isDark
+        ? colors.selectedBackgroundColor
+        : AppPalette.mapFill;
+    final blockFill = isDark
+        ? Color.alphaBlend(
+            colors.textSecondaryColor.changeOpacity(0.16),
+            colors.selectedBackgroundColor,
+          )
+        : AppPalette.mapBlock;
+    final parkFill = isDark
+        ? Color.alphaBlend(
+            colors.successColor.changeOpacity(0.18),
+            colors.selectedBackgroundColor,
+          )
+        : AppPalette.mapPark;
+    final roadFill = isDark ? colors.cardColor : AppPalette.mapRoad;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -37,7 +57,7 @@ class AccidentLocationMapCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            const ColoredBox(color: Color(0xFFE7EEF3)),
+            ColoredBox(color: mapFill),
             LayoutBuilder(
               builder: (context, constraints) {
                 return InteractiveViewer(
@@ -52,9 +72,15 @@ class AccidentLocationMapCard extends StatelessWidget {
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        const CustomPaint(
-                          painter: _ConfirmMapPainter(),
-                          child: SizedBox.expand(),
+                        CustomPaint(
+                          painter: _ConfirmMapPainter(
+                            fill: mapFill,
+                            block: blockFill,
+                            park: parkFill,
+                            road: roadFill,
+                            accent: colors.brandAccent,
+                          ),
+                          child: const SizedBox.expand(),
                         ),
                         Align(
                           alignment: const Alignment(0.06, -0.04),
@@ -122,20 +148,29 @@ class AccidentLocationMapCard extends StatelessWidget {
 }
 
 class _ConfirmMapPainter extends CustomPainter {
-  const _ConfirmMapPainter();
+  const _ConfirmMapPainter({
+    required this.fill,
+    required this.block,
+    required this.park,
+    required this.road,
+    required this.accent,
+  });
+
+  final Color fill;
+  final Color block;
+  final Color park;
+  final Color road;
+  final Color accent;
 
   static const _roadWidth = 14.0;
   static const _accentWidth = 2.4;
-  static const _mapFill = Color(0xFFE7EEF3);
-  static const _blockFill = Color(0xFFD5E1EA);
-  static const _parkFill = Color(0xFFC9DCD0);
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.drawRect(Offset.zero & size, Paint()..color = _mapFill);
+    canvas.drawRect(Offset.zero & size, Paint()..color = fill);
 
-    final block = Paint()..color = _blockFill;
-    final park = Paint()..color = _parkFill;
+    final blockPaint = Paint()..color = block;
+    final parkPaint = Paint()..color = park;
     void rounded(Rect rect, Paint paint) {
       canvas.drawRRect(
         RRect.fromRectAndRadius(rect, const Radius.circular(8)),
@@ -150,7 +185,7 @@ class _ConfirmMapPainter extends CustomPainter {
         size.width * 0.22,
         size.height * 0.2,
       ),
-      block,
+      blockPaint,
     );
     rounded(
       Rect.fromLTWH(
@@ -159,7 +194,7 @@ class _ConfirmMapPainter extends CustomPainter {
         size.width * 0.18,
         size.height * 0.16,
       ),
-      block,
+      blockPaint,
     );
     rounded(
       Rect.fromLTWH(
@@ -168,7 +203,7 @@ class _ConfirmMapPainter extends CustomPainter {
         size.width * 0.28,
         size.height * 0.24,
       ),
-      block,
+      blockPaint,
     );
     rounded(
       Rect.fromLTWH(
@@ -177,7 +212,7 @@ class _ConfirmMapPainter extends CustomPainter {
         size.width * 0.26,
         size.height * 0.18,
       ),
-      park,
+      parkPaint,
     );
     rounded(
       Rect.fromLTWH(
@@ -186,7 +221,7 @@ class _ConfirmMapPainter extends CustomPainter {
         size.width * 0.3,
         size.height * 0.2,
       ),
-      block,
+      blockPaint,
     );
     rounded(
       Rect.fromLTWH(
@@ -195,7 +230,7 @@ class _ConfirmMapPainter extends CustomPainter {
         size.width * 0.3,
         size.height * 0.2,
       ),
-      block,
+      blockPaint,
     );
     rounded(
       Rect.fromLTWH(
@@ -204,47 +239,53 @@ class _ConfirmMapPainter extends CustomPainter {
         size.width * 0.36,
         size.height * 0.18,
       ),
-      block,
+      blockPaint,
     );
 
-    final road = Paint()
-      ..color = const Color(0xFFF7FBFD)
+    final roadPaint = Paint()
+      ..color = road
       ..strokeWidth = _roadWidth
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
     canvas.drawLine(
       Offset(0, size.height * 0.36),
       Offset(size.width, size.height * 0.36),
-      road,
+      roadPaint,
     );
     canvas.drawLine(
       Offset(0, size.height * 0.64),
       Offset(size.width, size.height * 0.64),
-      road,
+      roadPaint,
     );
     canvas.drawLine(
       Offset(size.width * 0.32, 0),
       Offset(size.width * 0.32, size.height),
-      road,
+      roadPaint,
     );
     canvas.drawLine(
       Offset(size.width * 0.72, 0),
       Offset(size.width * 0.72, size.height),
-      road,
+      roadPaint,
     );
 
-    final accent = Paint()
-      ..color = AppSplashColors.cyan.changeOpacity(0.5)
+    final accentPaint = Paint()
+      ..color = accent.changeOpacity(0.5)
       ..strokeWidth = _accentWidth
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
     canvas.drawLine(
       Offset(size.width * 0.1, size.height * 0.64),
       Offset(size.width * 0.78, size.height * 0.64),
-      accent,
+      accentPaint,
     );
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _ConfirmMapPainter oldDelegate) {
+    return oldDelegate.fill != fill ||
+        oldDelegate.block != block ||
+        oldDelegate.park != park ||
+        oldDelegate.road != road ||
+        oldDelegate.accent != accent;
+  }
 }

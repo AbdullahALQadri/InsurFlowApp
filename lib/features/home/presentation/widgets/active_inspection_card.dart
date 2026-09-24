@@ -29,7 +29,7 @@ class ActiveInspectionCard extends StatelessWidget {
         border: Border.all(color: colors.borderColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: colors.shadowColor.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -44,8 +44,8 @@ class ActiveInspectionCard extends StatelessWidget {
               Container(
                 width: 10,
                 height: 10,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF10B981),
+                decoration: BoxDecoration(
+                  color: colors.successColor,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -53,7 +53,7 @@ class ActiveInspectionCard extends StatelessWidget {
               Text(
                 strings.statusInProgress.toUpperCase(),
                 style: context.font14Bold?.copyWith(
-                  color: const Color(0xFF10B981),
+                  color: colors.successColor,
                   fontWeight: FontWeightHelper.bold,
                 ),
               ),

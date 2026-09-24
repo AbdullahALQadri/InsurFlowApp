@@ -44,7 +44,7 @@ class NewAssignmentBanner extends StatelessWidget {
                 child: Text(
                   strings.newAssignment.toUpperCase(),
                   style: context.font14Bold?.copyWith(
-                    color: Colors.white,
+                    color: colors.onPrimaryColor,
                     fontWeight: FontWeightHelper.bold,
                   ),
                 ),

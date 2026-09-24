@@ -15,6 +15,7 @@ import 'package:insurflow/core/l10n/app_strings.dart';
 import 'package:insurflow/core/routing/routes.dart';
 import 'package:insurflow/features/claims/domain/vehicle_evidence.dart';
 import 'package:insurflow/features/claims/presentation/widgets/evidence_category_preview.dart';
+import 'package:insurflow/core/global/design_system/tokens/app_palette.dart';
 
 class EvidencePhotoPreviewArgs {
   const EvidencePhotoPreviewArgs({
@@ -367,7 +368,7 @@ class _SavedMark extends StatelessWidget {
                 fontWeight: FontWeightHelper.semiBold,
                 height: 1.3,
                 shadows: const [
-                  Shadow(color: Color(0xCC000000), blurRadius: 8),
+                  Shadow(color: AppPalette.immersiveScrim, blurRadius: 8),
                 ],
               ),
             ),

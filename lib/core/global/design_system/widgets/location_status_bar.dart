@@ -23,14 +23,14 @@ class LocationStatusBar extends StatelessWidget {
     Color badgeColor;
     switch (status) {
       case GpsStatus.active:
-        badgeColor = const Color(0xFF10B981); // Emerald Green
+        badgeColor = colors.successColor;
         break;
       case GpsStatus.weakGps:
-        badgeColor = const Color(0xFBF59E0B); // Amber Yellow
+        badgeColor = colors.warningColor;
         break;
       case GpsStatus.disabled:
       case GpsStatus.permissionDenied:
-        badgeColor = const Color(0xFFEF4444); // Red
+        badgeColor = colors.dangerColor;
         break;
       case GpsStatus.waitingConnection:
         badgeColor = colors.textSecondaryColor;

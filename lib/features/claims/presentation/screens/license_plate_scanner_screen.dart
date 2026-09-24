@@ -6,6 +6,7 @@ import 'package:insurflow/core/l10n/app_strings.dart';
 import 'package:insurflow/core/routing/routes.dart';
 import 'package:insurflow/features/claims/presentation/screens/manual_plate_entry_screen.dart';
 import 'package:insurflow/features/claims/presentation/widgets/license_plate_scan_overlay.dart';
+import 'package:insurflow/core/global/design_system/tokens/app_palette.dart';
 
 class LicensePlateScannerScreen extends StatefulWidget {
   const LicensePlateScannerScreen({
@@ -176,7 +177,7 @@ class _LicensePlateScannerScreenState extends State<LicensePlateScannerScreen>
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light,
       statusBarBrightness: Brightness.dark,
-      systemNavigationBarColor: Color(0xFF05080F),
+      systemNavigationBarColor: AppPalette.immersiveSurface,
       systemNavigationBarIconBrightness: Brightness.light,
     );
 
@@ -184,7 +185,7 @@ class _LicensePlateScannerScreenState extends State<LicensePlateScannerScreen>
       value: overlay,
       child: Scaffold(
         key: ValueKey(widget.claimId),
-        backgroundColor: const Color(0xFF05080F),
+        backgroundColor: AppPalette.immersiveSurface,
         body: Stack(
           fit: StackFit.expand,
           children: [
@@ -219,7 +220,7 @@ class _LivePreview extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = camera;
     if (controller == null || !controller.value.isInitialized) {
-      return const ColoredBox(color: Color(0xFF05080F));
+      return const ColoredBox(color: AppPalette.immersiveSurface);
     }
 
     return FittedBox(

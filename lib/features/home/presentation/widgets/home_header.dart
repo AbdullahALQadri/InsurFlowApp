@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:insurflow/core/extensions/app_sizes.dart';
 import 'package:insurflow/core/extensions/opacity_of_color.dart';
 import 'package:insurflow/core/extensions/text_style_extension.dart';
-import 'package:insurflow/core/global/design_system/app_color/app_splash_colors.dart';
 import 'package:insurflow/core/global/design_system/font_weight/font_weight_helper.dart';
 import 'package:insurflow/core/global/design_system/theme_data/theme_extension.dart';
 import 'package:insurflow/core/global/design_system/widgets/location_status_bar.dart';
@@ -36,14 +35,15 @@ class HomeHeader extends StatelessWidget {
             children: [
               Text(
                 '$greeting, $adjusterName',
-                style: (context.isSmallScreen
-                        ? context.font22Bold
-                        : context.font26Bold)
-                    ?.copyWith(
-                      color: colors.textPrimaryColor,
-                      fontWeight: FontWeightHelper.bold,
-                      height: 1.2,
-                    ),
+                style:
+                    (context.isSmallScreen
+                            ? context.font22Bold
+                            : context.font26Bold)
+                        ?.copyWith(
+                          color: colors.textPrimaryColor,
+                          fontWeight: FontWeightHelper.bold,
+                          height: 1.2,
+                        ),
               ),
               context.addVerticalSpace(6),
               Text(
@@ -80,6 +80,7 @@ class _ProfileAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final size = context.width(44);
 
     return Material(
@@ -94,12 +95,12 @@ class _ProfileAvatar extends StatelessWidget {
             shape: BoxShape.circle,
             gradient: context.buttonTheme.backgroundGradient,
             border: Border.all(
-              color: Colors.white,
+              color: colors.cardColor,
               width: context.width(2),
             ),
             boxShadow: [
               BoxShadow(
-                color: AppSplashColors.cyan.changeOpacity(0.22),
+                color: colors.primaryColor.changeOpacity(0.22),
                 blurRadius: context.width(10),
                 offset: Offset(0, context.height(2)),
               ),
@@ -109,7 +110,7 @@ class _ProfileAvatar extends StatelessWidget {
             child: Text(
               initial.toUpperCase(),
               style: context.font16Bold?.copyWith(
-                color: Colors.white,
+                color: context.buttonTheme.foregroundColor,
                 fontWeight: FontWeightHelper.bold,
               ),
             ),

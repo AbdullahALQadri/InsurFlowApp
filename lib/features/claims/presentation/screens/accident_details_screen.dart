@@ -239,7 +239,7 @@ class _AccidentDetailsScreenState extends State<AccidentDetailsScreen> {
     required AccidentField field,
     required Widget child,
   }) {
-    const warning = Color(0xFFD97706);
+    final warning = context.colors.warningColor;
     final attention = _needsAttention(field);
 
     return KeyedSubtree(

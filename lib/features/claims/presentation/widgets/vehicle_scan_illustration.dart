@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:insurflow/core/extensions/opacity_of_color.dart';
 import 'package:insurflow/core/global/design_system/theme_data/theme_extension.dart';
+import 'package:insurflow/core/global/design_system/tokens/app_palette.dart';
 
 class VehicleScanIllustration extends StatefulWidget {
   const VehicleScanIllustration({super.key});
@@ -152,7 +153,7 @@ class _VehicleScanPainter extends CustomPainter {
       ),
       const Radius.circular(3),
     );
-    canvas.drawRRect(plate, Paint()..color = Colors.white);
+    canvas.drawRRect(plate, Paint()..color = AppPalette.plateFace);
     canvas.drawRRect(
       plate,
       Paint()

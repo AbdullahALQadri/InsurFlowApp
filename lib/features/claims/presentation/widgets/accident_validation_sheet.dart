@@ -165,8 +165,6 @@ class _ChecklistRow extends StatelessWidget {
   final bool complete;
   final VoidCallback? onTap;
 
-  static const _warning = Color(0xFFD97706);
-
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
@@ -174,7 +172,7 @@ class _ChecklistRow extends StatelessWidget {
     final label = strings.accidentChecklistLabel(field);
 
     return Material(
-      color: complete ? colors.backgroundColor : _warning.changeOpacity(0.08),
+      color: complete ? colors.backgroundColor : context.colors.warningColor.changeOpacity(0.08),
       borderRadius: context.circularRadius(14),
       child: InkWell(
         key: Key('accident-check-${field.name}'),
@@ -198,7 +196,7 @@ class _ChecklistRow extends StatelessWidget {
               Text(
                 complete ? '✓' : '⚠',
                 style: context.font16Bold?.copyWith(
-                  color: complete ? ClaimStatusColors.approved : _warning,
+                  color: complete ? ClaimStatusColors.approved : context.colors.warningColor,
                   fontWeight: FontWeightHelper.bold,
                 ),
               ),

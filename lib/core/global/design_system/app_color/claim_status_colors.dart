@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:insurflow/core/global/design_system/tokens/app_palette.dart';
 import 'package:insurflow/features/claims/domain/claim_status.dart';
 
+/// Status colours for claims.
+///
+/// Deliberately constant across themes: a status colour is data, and it
+/// must mean the same thing in light and dark. Values come from
+/// [AppPalette] so they live with the rest of the palette.
 class ClaimStatusColors {
   ClaimStatusColors._();
 
-  static const Color assigned = Color(0xFF00A3C4);
+  static const Color assigned = AppPalette.cyan;
   static const Color inProgress = Color(0xFF1D4ED8);
-  static const Color correctionRequired = Color(0xFFD97706);
-  static const Color submitted = Color(0xFF0F9D8A);
-  static const Color underReview = Color(0xFF6366F1);
-  static const Color approved = Color(0xFF047857);
-  static const Color rejected = Color(0xFFB91C1C);
-  static const Color newClaim = Color(0xFF64748B);
+  static const Color correctionRequired = AppPalette.warning;
+  static const Color submitted = AppPalette.success;
+  static const Color underReview = AppPalette.info;
+  static const Color approved = AppPalette.successStrong;
+  static const Color rejected = AppPalette.dangerStrong;
+  static const Color newClaim = AppPalette.neutral;
 
   static Color of(ClaimStatus status) {
     switch (status) {

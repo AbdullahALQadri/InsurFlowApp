@@ -1,19 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:insurflow/core/global/design_system/tokens/app_palette.dart';
 
-/// Dark cinematic palette used by the startup experience.
-/// Kept in the design system so splash (and future dark surfaces) share tokens.
+/// Brand-surface colours for the splash screen.
+///
+/// Retained as the name the splash widgets already import; the values
+/// now come from [AppPalette] so there is one source of truth. Screens
+/// other than the splash should read the `brand*` tokens from
+/// `context.colors` instead, which is what makes them themeable.
 class AppSplashColors {
   AppSplashColors._();
 
-  static const Color midnight = Color(0xFF070B16);
-  static const Color abyss = Color(0xFF05080F);
-  static const Color navy = Color(0xFF0C1628);
-  static const Color atmosphere = Color(0xFF12344C);
-  static const Color cyan = Color(0xFF3EC6E0);
-  static const Color cyanDeep = Color(0xFF0E8CBC);
-  static const Color glow = Color(0xFF5EE7FF);
-  static const Color line = Color(0xFF4DB8D4);
-  static const Color textPrimary = Color(0xFFF4F8FB);
-  static const Color textMuted = Color(0xFF8AA4B8);
-  static const Color textSubtle = Color(0xFF6B8298);
+  static const Color midnight = AppPalette.midnight;
+  static const Color abyss = AppPalette.abyss;
+  static const Color navy = AppPalette.navy;
+  static const Color atmosphere = AppPalette.atmosphere;
+  static const Color cyan = AppPalette.cyanLight;
+  static const Color cyanDeep = AppPalette.cyanDeep;
+  static const Color glow = AppPalette.glow;
+  static const Color line = AppPalette.line;
+  static const Color textPrimary = AppPalette.immersiveInk;
+  static const Color textMuted = AppPalette.immersiveMuted;
+  static const Color textSubtle = AppPalette.immersiveSubtle;
 }

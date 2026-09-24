@@ -440,6 +440,12 @@ class AppStrings {
 
   String get languageLabel => isArabic ? 'اللغة' : 'Language';
   String get themeLabel => isArabic ? 'المظهر' : 'Theme';
+  String get accentLabel => isArabic ? 'لون التطبيق' : 'Accent colour';
+  String get accentDefault => isArabic ? 'الافتراضي' : 'Default';
+  String get accentCustom => isArabic ? 'مخصص' : 'Custom';
+  String get accentHint => isArabic
+      ? 'يُطبَّق اللون المختار على الوضعين الفاتح والداكن مع ضبط التباين تلقائياً.'
+      : 'Your colour is applied to both light and dark, with contrast adjusted automatically.';
   String get themeSystem => isArabic ? 'حسب النظام' : 'System';
   String get themeLight => isArabic ? 'فاتح' : 'Light';
   String get themeDark => isArabic ? 'داكن' : 'Dark';

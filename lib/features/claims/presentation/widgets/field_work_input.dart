@@ -51,7 +51,7 @@ class FieldWorkInput extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final radius = context.circularRadius(14);
-    const warning = Color(0xFFD97706);
+    final warning = colors.warningColor;
     final borderColor = _hasError
         ? colors.inputErrorBorderColor
         : attention

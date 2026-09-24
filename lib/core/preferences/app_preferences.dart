@@ -10,36 +10,56 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 /// the app did before these controls existed, so it stays the default.
 @immutable
 class AppPreferences {
-  const AppPreferences({this.localeCode, this.themeMode = ThemeMode.system});
+  const AppPreferences({
+    this.localeCode,
+    this.themeMode = ThemeMode.system,
+    this.accentValue,
+  });
 
   /// `en`, `ar`, or null to follow the device language.
   final String? localeCode;
 
   final ThemeMode themeMode;
 
+  /// ARGB of the user's custom accent, or null to use the brand colour.
+  ///
+  /// Stored as an int because that is what survives JSON. A non-null
+  /// value is what makes the app run the custom theme; light/dark is
+  /// still controlled by [themeMode], so a custom accent works in both.
+  final int? accentValue;
+
   Locale? get locale => localeCode == null ? null : Locale(localeCode!);
 
   bool get followsSystemLanguage => localeCode == null;
 
+  Color? get accent => accentValue == null ? null : Color(accentValue!);
+
+  bool get usesCustomAccent => accentValue != null;
+
   AppPreferences copyWith({
     String? localeCode,
     ThemeMode? themeMode,
+    int? accentValue,
     bool clearLocale = false,
+    bool clearAccent = false,
   }) {
     return AppPreferences(
       localeCode: clearLocale ? null : (localeCode ?? this.localeCode),
       themeMode: themeMode ?? this.themeMode,
+      accentValue: clearAccent ? null : (accentValue ?? this.accentValue),
     );
   }
 
   Map<String, dynamic> toJson() => {
     if (localeCode != null) 'localeCode': localeCode,
     'themeMode': themeMode.name,
+    if (accentValue != null) 'accentValue': accentValue,
   };
 
   static AppPreferences fromJson(Map<String, dynamic> json) {
     final code = json['localeCode'];
     final mode = json['themeMode'];
+    final accent = json['accentValue'];
     return AppPreferences(
       // Anything other than a supported language falls back to system.
       localeCode: (code == 'en' || code == 'ar') ? code as String : null,
@@ -47,6 +67,9 @@ class AppPreferences {
         (value) => value.name == mode,
         orElse: () => ThemeMode.system,
       ),
+      // A malformed accent falls back to the brand colour rather than
+      // producing an unreadable theme.
+      accentValue: accent is int ? accent : null,
     );
   }
 }

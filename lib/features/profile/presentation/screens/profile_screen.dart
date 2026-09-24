@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:insurflow/core/extensions/app_sizes.dart';
 import 'package:insurflow/core/extensions/opacity_of_color.dart';
 import 'package:insurflow/core/extensions/text_style_extension.dart';
-import 'package:insurflow/core/global/design_system/app_color/app_splash_colors.dart';
 import 'package:insurflow/core/global/design_system/font_weight/font_weight_helper.dart';
 import 'package:insurflow/core/global/design_system/theme_data/theme_extension.dart';
 import 'package:insurflow/core/l10n/app_strings.dart';
@@ -15,6 +14,7 @@ import 'package:insurflow/features/notifications/presentation/cubit/notification
 import 'package:insurflow/features/notifications/presentation/screens/notification_center_screen.dart';
 import 'package:insurflow/features/profile/presentation/cubit/app_preferences_cubit.dart';
 import 'package:insurflow/features/profile/presentation/screens/change_password_screen.dart';
+import 'package:insurflow/features/profile/presentation/widgets/accent_picker_sheet.dart';
 import 'package:insurflow/features/profile/presentation/widgets/profile_section.dart';
 import 'package:insurflow/features/profile/presentation/widgets/sign_out_dialog.dart';
 
@@ -155,7 +155,8 @@ class ProfileScreen extends StatelessWidget {
             },
           ),
           const _LanguageRow(),
-          const _ThemeRow(isLast: true),
+          const _ThemeRow(),
+          const _AccentRow(isLast: true),
         ],
       ),
     );
@@ -229,7 +230,7 @@ class _ProfileHeader extends StatelessWidget {
             gradient: context.buttonTheme.backgroundGradient,
             boxShadow: [
               BoxShadow(
-                color: AppSplashColors.cyan.changeOpacity(0.28),
+                color: colors.primaryColor.changeOpacity(0.28),
                 blurRadius: context.width(20),
                 offset: Offset(0, context.height(6)),
               ),
@@ -241,12 +242,12 @@ class _ProfileHeader extends StatelessWidget {
                 ? Icon(
                     Icons.person_outline_rounded,
                     size: context.width(38),
-                    color: Colors.white,
+                    color: context.buttonTheme.foregroundColor,
                   )
                 : Text(
                     initial,
                     style: context.font26Bold?.copyWith(
-                      color: Colors.white,
+                      color: context.buttonTheme.foregroundColor,
                       fontWeight: FontWeightHelper.bold,
                     ),
                   ),
@@ -345,9 +346,7 @@ class _LanguageRow extends StatelessWidget {
 }
 
 class _ThemeRow extends StatelessWidget {
-  const _ThemeRow({this.isLast = false});
-
-  final bool isLast;
+  const _ThemeRow();
 
   @override
   Widget build(BuildContext context) {
@@ -363,7 +362,6 @@ class _ThemeRow extends StatelessWidget {
             ThemeMode.system => Icons.brightness_auto_outlined,
           },
           label: strings.themeLabel,
-          isLast: isLast,
           value: switch (preferences.themeMode) {
             ThemeMode.light => strings.themeLight,
             ThemeMode.dark => strings.themeDark,
@@ -394,6 +392,44 @@ class _ThemeRow extends StatelessWidget {
     );
     if (!choice.isSentinel) return;
     await cubit.setThemeMode(choice.value!);
+  }
+}
+
+class _AccentRow extends StatelessWidget {
+  const _AccentRow({this.isLast = false});
+
+  final bool isLast;
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
+    final colors = context.colors;
+
+    return BlocBuilder<AppPreferencesCubit, AppPreferences>(
+      builder: (context, preferences) {
+        return ProfileRow(
+          key: const Key('profile-accent'),
+          icon: Icons.palette_outlined,
+          label: strings.accentLabel,
+          isLast: isLast,
+          value: preferences.usesCustomAccent
+              ? strings.accentCustom
+              : strings.accentDefault,
+          trailing: Container(
+            width: context.width(22),
+            height: context.width(22),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              // Shows the accent actually in effect, which for a custom
+              // pick is the contrast-adjusted colour, not the raw one.
+              color: colors.primaryColor,
+              border: Border.all(color: colors.borderColor),
+            ),
+          ),
+          onTap: () => AccentPickerSheet.show(context),
+        );
+      },
+    );
   }
 }
 

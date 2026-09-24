@@ -75,8 +75,20 @@ class InsurFlowApp extends StatelessWidget {
           title: 'InsurFlow',
           debugShowCheckedModeBanner: false,
           navigatorKey: navigatorKey,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
+          // A custom accent re-accents both brightnesses, so light/dark
+          // still follows themeMode when a custom colour is chosen.
+          theme: preferences.accent == null
+              ? AppTheme.lightTheme
+              : AppTheme.custom(
+                  accent: preferences.accent!,
+                  brightness: Brightness.light,
+                ),
+          darkTheme: preferences.accent == null
+              ? AppTheme.darkTheme
+              : AppTheme.custom(
+                  accent: preferences.accent!,
+                  brightness: Brightness.dark,
+                ),
           // Both follow the saved preference; ThemeMode.system and a null
           // locale keep the previous behaviour of following the device.
           themeMode: preferences.themeMode,

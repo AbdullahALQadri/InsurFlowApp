@@ -5,6 +5,7 @@ import 'package:insurflow/core/extensions/text_style_extension.dart';
 import 'package:insurflow/core/global/design_system/app_color/app_splash_colors.dart';
 import 'package:insurflow/core/global/design_system/font_weight/font_weight_helper.dart';
 import 'package:insurflow/core/l10n/app_strings.dart';
+import 'package:insurflow/core/global/design_system/tokens/app_palette.dart';
 
 /// Wide plate window (not a square QR reticle).
 class LicensePlateFrameGeometry {
@@ -104,7 +105,7 @@ class _FrameHint extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: const Color(0xE6101828),
+        color: AppPalette.navy.changeOpacity(0.90),
         borderRadius: context.circularRadius(8),
         border: Border.all(color: AppSplashColors.cyan.changeOpacity(0.35)),
       ),
@@ -118,7 +119,9 @@ class _FrameHint extends StatelessWidget {
             fontWeight: FontWeightHelper.medium,
             height: 1.3,
             fontSize: context.width(13),
-            shadows: const [Shadow(color: Color(0xCC000000), blurRadius: 6)],
+            shadows: const [
+              Shadow(color: AppPalette.immersiveScrim, blurRadius: 6),
+            ],
           ),
         ),
       ),
@@ -146,11 +149,14 @@ class _TopChrome extends StatelessWidget {
     final strings = AppStrings.of(context);
 
     return DecoratedBox(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xCC05080F), Color(0x0005080F)],
+          colors: [
+            AppPalette.immersiveSurface.changeOpacity(0.80),
+            AppPalette.immersiveSurface.changeOpacity(0),
+          ],
         ),
       ),
       child: SafeArea(
@@ -172,7 +178,7 @@ class _TopChrome extends StatelessWidget {
                     color: AppSplashColors.textPrimary,
                     fontWeight: FontWeightHelper.semiBold,
                     shadows: const [
-                      Shadow(color: Color(0xDD000000), blurRadius: 8),
+                      Shadow(color: AppPalette.immersiveScrim, blurRadius: 8),
                     ],
                   ),
                 ),
@@ -206,11 +212,14 @@ class _BottomChrome extends StatelessWidget {
     return Align(
       alignment: Alignment.bottomCenter,
       child: DecoratedBox(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
-            colors: [Color(0xF205080F), Color(0x0005080F)],
+            colors: [
+              AppPalette.immersiveSurface.changeOpacity(0.95),
+              AppPalette.immersiveSurface.changeOpacity(0),
+            ],
           ),
         ),
         child: SafeArea(
@@ -222,7 +231,7 @@ class _BottomChrome extends StatelessWidget {
               children: [
                 DecoratedBox(
                   decoration: BoxDecoration(
-                    color: const Color(0xF2141C2A),
+                    color: AppPalette.immersivePanel.changeOpacity(0.95),
                     borderRadius: context.circularRadius(16),
                     border: Border.all(
                       color: AppSplashColors.cyan.changeOpacity(0.22),
@@ -282,7 +291,7 @@ class _ChromeIconButton extends StatelessWidget {
       child: Material(
         color: active
             ? AppSplashColors.cyan.changeOpacity(0.28)
-            : const Color(0x66000000),
+            : AppPalette.immersiveScrim.changeOpacity(0.4),
         shape: const CircleBorder(),
         child: InkWell(
           customBorder: const CircleBorder(),
@@ -327,7 +336,10 @@ class _CaptureButton extends StatelessWidget {
           child: DecoratedBox(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: _ringWidth),
+              border: Border.all(
+                color: AppPalette.immersiveInk,
+                width: _ringWidth,
+              ),
             ),
             child: Center(
               child: DecoratedBox(
@@ -370,7 +382,10 @@ class _PlateScrimPainter extends CustomPainter {
       ..addRect(Offset.zero & size)
       ..addRRect(cutout)
       ..fillType = PathFillType.evenOdd;
-    canvas.drawPath(path, Paint()..color = const Color(0x99050A12));
+    canvas.drawPath(
+      path,
+      Paint()..color = AppPalette.immersiveSurface.changeOpacity(0.6),
+    );
   }
 
   @override

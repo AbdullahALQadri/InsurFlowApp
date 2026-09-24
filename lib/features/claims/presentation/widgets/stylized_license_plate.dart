@@ -4,6 +4,7 @@ import 'package:insurflow/core/extensions/opacity_of_color.dart';
 import 'package:insurflow/core/extensions/text_style_extension.dart';
 import 'package:insurflow/core/global/design_system/font_weight/font_weight_helper.dart';
 import 'package:insurflow/core/global/design_system/theme_data/theme_extension.dart';
+import 'package:insurflow/core/global/design_system/tokens/app_palette.dart';
 
 class StylizedLicensePlate extends StatelessWidget {
   const StylizedLicensePlate({
@@ -32,9 +33,9 @@ class StylizedLicensePlate extends StatelessWidget {
           aspectRatio: 3.15,
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: const Color(0xFFF4F1E8),
+              color: AppPalette.plateFace,
               borderRadius: context.circularRadius(10),
-              border: Border.all(color: const Color(0xFF1A2332), width: 2.2),
+              border: Border.all(color: AppPalette.plateEdge, width: 2.2),
               boxShadow: [
                 BoxShadow(
                   color: colors.textPrimaryColor.changeOpacity(
@@ -51,7 +52,7 @@ class StylizedLicensePlate extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: context.circularRadius(6),
                   border: Border.all(
-                    color: const Color(0xFF2C3A4F).changeOpacity(0.35),
+                    color: AppPalette.plateShadow.changeOpacity(0.35),
                   ),
                 ),
                 child: Row(
@@ -64,14 +65,14 @@ class StylizedLicensePlate extends StatelessWidget {
                       child: SizedBox(
                         width: context.width(36),
                         child: ColoredBox(
-                          color: const Color(0xFF12344C),
+                          color: AppPalette.plateHeader,
                           child: Center(
                             child: RotatedBox(
                               quarterTurns: 3,
                               child: Text(
                                 'PS',
                                 style: context.font14Bold?.copyWith(
-                                  color: Colors.white,
+                                  color: AppPalette.plateFace,
                                   fontSize: context.width(10),
                                   letterSpacing: 1.2,
                                   fontWeight: FontWeightHelper.bold,
@@ -116,8 +117,8 @@ class StylizedLicensePlate extends StatelessWidget {
                                   textAlign: TextAlign.center,
                                   style: context.font34Bold?.copyWith(
                                     color: muted
-                                        ? const Color(0xFF9CA3AF)
-                                        : const Color(0xFF111827),
+                                        ? AppPalette.plateInkMuted
+                                        : AppPalette.plateInk,
                                     fontWeight: FontWeightHelper.bold,
                                     letterSpacing: 2.6,
                                     height: 1,
@@ -149,8 +150,8 @@ class _PlateBolt extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: const Color(0xFF9CA3AF).changeOpacity(0.55),
-        border: Border.all(color: const Color(0xFF6B7280), width: 0.8),
+        color: AppPalette.plateInkMuted.changeOpacity(0.55),
+        border: Border.all(color: AppPalette.plateSlot, width: 0.8),
       ),
       child: SizedBox(
         width: context.width(StylizedLicensePlate._boltSize),
