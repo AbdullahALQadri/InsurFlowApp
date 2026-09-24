@@ -16,6 +16,7 @@ import 'package:insurflow/features/splash/presentation/widgets/splash_atmosphere
 import 'package:insurflow/features/splash/presentation/widgets/splash_brand_mark.dart';
 import 'package:insurflow/features/splash/presentation/widgets/splash_flow_lines.dart';
 import 'package:lottie/lottie.dart';
+import 'package:insurflow/core/l10n/app_strings.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -27,8 +28,6 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
   static const _brandName = 'InsurFlow';
-  static const _tagline = 'Field Claims. Simplified.';
-  static const _footer = 'Secure  •  Fast  •  Accurate';
   static const _brandTracking = 1.4;
   static const _taglineTracking = 0.6;
   static const _footerTracking = 1.8;
@@ -155,6 +154,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     final logoSize = _logoSize(context);
     final overlay = SystemUiOverlayStyle.light.copyWith(
       statusBarColor: Colors.transparent,
@@ -219,7 +219,7 @@ class _SplashScreenState extends State<SplashScreen>
                               FadeTransition(
                                 opacity: _taglineOpacity,
                                 child: Text(
-                                  _tagline,
+                                  strings.splashTagline,
                                   textAlign: TextAlign.center,
                                   style: context.font14Regular?.copyWith(
                                     color: AppSplashColors.textMuted,
@@ -252,7 +252,7 @@ class _SplashScreenState extends State<SplashScreen>
                     FadeTransition(
                       opacity: _footerOpacity,
                       child: Text(
-                        _footer,
+                        strings.splashFooter,
                         textAlign: TextAlign.center,
                         style: context.font14Regular?.copyWith(
                           color: AppSplashColors.textMuted,

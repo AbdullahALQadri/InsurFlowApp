@@ -95,6 +95,7 @@ class NotificationTile extends StatelessWidget {
                       children: [
                         Text(
                           ClaimDateFormatter.lastUpdated(
+                            strings,
                             notification.sentAt ?? notification.receivedAt,
                           ),
                           style: context.font14Regular?.copyWith(

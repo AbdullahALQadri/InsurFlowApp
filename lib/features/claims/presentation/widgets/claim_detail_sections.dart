@@ -154,6 +154,7 @@ class ClaimDetailSections extends StatelessWidget {
                   AssignmentInfoRow(
                     label: strings.policyPeriodLabel,
                     value: ClaimDateFormatter.dateRange(
+                      strings,
                       policy.startDate!,
                       policy.expiryDate!,
                     ),
@@ -178,13 +179,14 @@ class ClaimDetailSections extends StatelessWidget {
               children: [
                 AssignmentInfoRow(
                   label: strings.accidentType,
-                  value: accident.accidentTypeLabel,
+                  value: strings.incidentTypeLabelFor(accident.accidentType),
                 ),
                 AssignmentInfoRow(
                   label: strings.accidentDate,
                   value: accident.accidentDateTime == null
                       ? accident.accidentDate
                       : ClaimDateFormatter.dayMonthYear(
+                          strings,
                           accident.accidentDateTime!,
                         ),
                 ),
@@ -211,7 +213,7 @@ class ClaimDetailSections extends StatelessWidget {
     final address = claim.incidentLocation?.trim();
     final coordinates = claim.incidentCoordinates;
     final incidentPoint = claim.incidentMapPoint;
-    final type = claim.incidentTypeLabel;
+    final type = strings.incidentTypeLabelFor(claim.incidentType);
     if ((address == null || address.isEmpty) &&
         coordinates == null &&
         type == null) {
@@ -233,7 +235,10 @@ class ClaimDetailSections extends StatelessWidget {
             label: strings.capturedAtLabel,
             value: coordinates?.capturedAt == null
                 ? null
-                : ClaimDateFormatter.capturedAt(coordinates!.capturedAt!),
+                : ClaimDateFormatter.capturedAt(
+                    strings,
+                    coordinates!.capturedAt!,
+                  ),
           ),
           // Real Google Map on `incidentCoordinates`. When the backend
           // sent no usable pair there is nothing to centre on, so the
@@ -279,7 +284,10 @@ class ClaimDetailSections extends StatelessWidget {
                   label: strings.capturedAtLabel,
                   value: location.capturedAt == null
                       ? null
-                      : ClaimDateFormatter.capturedAt(location.capturedAt!),
+                      : ClaimDateFormatter.capturedAt(
+                          strings,
+                          location.capturedAt!,
+                        ),
                 ),
                 // The adjuster's own fix, mapped only when it carries a
                 // usable coordinate pair — the backend can return an
@@ -361,7 +369,10 @@ class ClaimDetailSections extends StatelessWidget {
                   label: strings.capturedAtLabel,
                   value: signature.capturedAt == null
                       ? null
-                      : ClaimDateFormatter.capturedAt(signature.capturedAt!),
+                      : ClaimDateFormatter.capturedAt(
+                          strings,
+                          signature.capturedAt!,
+                        ),
                 ),
               ],
             ),
@@ -393,11 +404,11 @@ class ClaimDetailSections extends StatelessWidget {
             label: strings.assignedDateLabel,
             value: claim.assignedAt == null
                 ? null
-                : ClaimDateFormatter.capturedAt(claim.assignedAt!),
+                : ClaimDateFormatter.capturedAt(strings, claim.assignedAt!),
           ),
           AssignmentInfoRow(
             label: strings.priorityLabel,
-            value: claim.assignment?.priorityLabel,
+            value: strings.priorityLabelFor(claim.priority),
           ),
           AssignmentInfoRow(
             label: strings.assignmentNotesLabel,
@@ -408,7 +419,7 @@ class ClaimDetailSections extends StatelessWidget {
             label: strings.createdAtLabel,
             value: claim.createdAt == null
                 ? null
-                : ClaimDateFormatter.capturedAt(claim.createdAt!),
+                : ClaimDateFormatter.capturedAt(strings, claim.createdAt!),
           ),
         ],
       ),
@@ -458,7 +469,7 @@ class ClaimDetailSections extends StatelessWidget {
             label: strings.closedAtLabel,
             value: claim.closedAt == null
                 ? null
-                : ClaimDateFormatter.capturedAt(claim.closedAt!),
+                : ClaimDateFormatter.capturedAt(strings, claim.closedAt!),
           ),
           AssignmentInfoRow(
             label: strings.closingNotesLabel,

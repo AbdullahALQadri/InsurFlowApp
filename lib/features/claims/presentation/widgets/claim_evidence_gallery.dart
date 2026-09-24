@@ -81,9 +81,9 @@ class _EvidenceTile extends StatelessWidget {
           context.addVerticalSpace(6),
           // `imageType` is a backend enum (VEHICLE_FRONT, DAMAGE_CLOSEUP,
           // ...). Shown as sent, only re-cased for readability.
-          if (item.imageTypeLabel != null)
+          if (strings.evidenceTypeLabel(item.imageType) != null)
             Text(
-              item.imageTypeLabel!,
+              strings.evidenceTypeLabel(item.imageType)!,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: context.font14Regular?.copyWith(
@@ -94,7 +94,7 @@ class _EvidenceTile extends StatelessWidget {
             ),
           if (item.uploadedAt != null)
             Text(
-              ClaimDateFormatter.capturedAt(item.uploadedAt!),
+              ClaimDateFormatter.capturedAt(strings, item.uploadedAt!),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: context.font14Regular?.copyWith(

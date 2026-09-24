@@ -324,6 +324,7 @@ class _PolicyCard extends StatelessWidget {
             context.addVerticalSpace(12),
             Text(
               ClaimDateFormatter.dateRange(
+                strings,
                 result.policyStart!,
                 result.policyEnd!,
               ),

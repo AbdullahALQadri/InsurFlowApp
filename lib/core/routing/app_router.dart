@@ -32,6 +32,7 @@ import 'package:insurflow/features/home/presentation/screens/main_screen.dart';
 import 'package:insurflow/features/notifications/presentation/screens/notification_center_screen.dart';
 import 'package:insurflow/features/profile/presentation/screens/change_password_screen.dart';
 import 'package:insurflow/features/splash/presentation/screens/splash_screen.dart';
+import 'package:insurflow/core/l10n/app_strings.dart';
 
 class AppRouter {
   const AppRouter();
@@ -209,9 +210,7 @@ class AppRouter {
           builder: (_) => ClaimValidationScreen(args: validation),
         );
       case Routes.changePasswordScreen:
-        return MaterialPageRoute(
-          builder: (_) => const ChangePasswordScreen(),
-        );
+        return MaterialPageRoute(builder: (_) => const ChangePasswordScreen());
 
       case Routes.notificationCenterScreen:
         return MaterialPageRoute(
@@ -240,14 +239,24 @@ class AppRouter {
         }
         return MaterialPageRoute(
           builder: (_) => Scaffold(
-            body: Center(child: Text('No Route Found ${settings.name}')),
+            body: Center(
+              child: Builder(
+                builder: (context) =>
+                    Text(AppStrings.of(context).routeNotFound),
+              ),
+            ),
           ),
         );
 
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
-            body: Center(child: Text('No Route Found ${settings.name}')),
+            body: Center(
+              child: Builder(
+                builder: (context) =>
+                    Text(AppStrings.of(context).routeNotFound),
+              ),
+            ),
           ),
         );
     }

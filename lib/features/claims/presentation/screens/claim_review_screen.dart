@@ -329,9 +329,10 @@ class _ReviewScaffold extends StatelessWidget {
         ];
       case ClaimReviewSectionId.accident:
         return [
-          if (summary.accidentTypeLabel != null) summary.accidentTypeLabel!,
+          if (summary.accidentType != null)
+            strings.incidentTypeLabelFor(summary.accidentType)!,
           if (summary.accidentDate != null)
-            _formatAccidentDate(summary.accidentDate!),
+            _formatAccidentDate(strings, summary.accidentDate!),
           if (summary.accidentTime != null) summary.accidentTime!,
           if (summary.accidentDescription != null) summary.accidentDescription!,
           if (summary.damageDescription != null) summary.damageDescription!,
@@ -362,9 +363,11 @@ class _ReviewScaffold extends StatelessWidget {
 
   /// `accidentDate` arrives as `YYYY-MM-DD`; anything unparseable is
   /// shown exactly as the backend sent it.
-  String _formatAccidentDate(String raw) {
+  String _formatAccidentDate(AppStrings strings, String raw) {
     final parsed = DateTime.tryParse(raw);
-    return parsed == null ? raw : ClaimDateFormatter.dayMonthYear(parsed);
+    return parsed == null
+        ? raw
+        : ClaimDateFormatter.dayMonthYear(strings, parsed);
   }
 
   void _edit(

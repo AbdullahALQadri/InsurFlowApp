@@ -76,16 +76,26 @@ class _AccidentDetailsScreenState extends State<AccidentDetailsScreen> {
     _now = widget.clock ?? DateTime.now();
     _date = DateTime(_now.year, _now.month, _now.day);
     _time = TimeOfDay(hour: _now.hour, minute: _now.minute);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // AppStrings is not available in initState, and this also re-renders
+    // the fields when the language changes.
     _syncPickerFields();
   }
 
-  void _syncPickerFields() {
+  /// Re-renders the date and time fields in the active language.
+  void _syncPickerFields([AppStrings? strings]) {
+    final copy = strings ?? AppStrings.of(context);
     _dateText.text = _date == null
         ? ''
-        : ClaimDateFormatter.dayMonthYear(_date!);
+        : ClaimDateFormatter.dayMonthYear(copy, _date!);
     _timeText.text = _time == null
         ? ''
         : ClaimDateFormatter.timeOfDay(
+            copy,
             hour: _time!.hour,
             minute: _time!.minute,
           );

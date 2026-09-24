@@ -44,7 +44,7 @@ class _TimelineTile extends StatelessWidget {
     final dotSize = context.width(10);
 
     final performer = entry.performedBy?.displayName;
-    final role = entry.roleLabel ?? entry.performedBy?.role;
+    final role = strings.userRoleLabel(entry.role ?? entry.performedBy?.role);
 
     return IntrinsicHeight(
       child: Row(
@@ -91,8 +91,8 @@ class _TimelineTile extends StatelessWidget {
                     context.addVerticalSpace(2),
                     Text(
                       strings.statusTransitionLabel(
-                        entry.previousStatusLabel!,
-                        entry.newStatusLabel!,
+                        strings.claimStatusLabel(entry.previousStatus)!,
+                        strings.claimStatusLabel(entry.newStatus)!,
                       ),
                       style: context.font14Regular?.copyWith(
                         color: colors.primaryColor,
@@ -113,7 +113,7 @@ class _TimelineTile extends StatelessWidget {
                   if (entry.timestamp != null) ...[
                     context.addVerticalSpace(2),
                     Text(
-                      ClaimDateFormatter.capturedAt(entry.timestamp!),
+                      ClaimDateFormatter.capturedAt(strings, entry.timestamp!),
                       style: context.font14Regular?.copyWith(
                         color: colors.textSecondaryColor,
                         fontSize: context.width(11),

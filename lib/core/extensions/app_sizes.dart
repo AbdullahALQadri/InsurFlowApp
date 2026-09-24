@@ -83,6 +83,7 @@ extension AppSizes on BuildContext {
       vertical: MediaQuery.sizeOf(this).height * (vertical / 800),
     );
   }
+
   EdgeInsets fromLTRB({
     required double left,
     required double top,
@@ -94,8 +95,6 @@ extension AppSizes on BuildContext {
       MediaQuery.sizeOf(this).height * (top / 800),
       MediaQuery.sizeOf(this).width * (right / 360),
       MediaQuery.sizeOf(this).height * (bottom / 800),
-
-
     );
   }
 
@@ -165,7 +164,8 @@ extension LayoutExtensions on Widget {
   /// Prefer padStart for RTL-safe layouts.
   /// Example: Text('Hello').padStart(16).
   Widget padStart([double value = 8.0]) => Padding(
-    padding: EdgeInsets.only(left: value),
+    // Directional: `start` is the right-hand side under Arabic.
+    padding: EdgeInsetsDirectional.only(start: value),
     child: this,
   );
 
@@ -173,7 +173,7 @@ extension LayoutExtensions on Widget {
   /// Prefer padEnd for RTL-safe layouts.
   /// Example: Text('Hello').padEnd(16).
   Widget padEnd([double value = 20]) => Padding(
-    padding: EdgeInsets.only(right: value),
+    padding: EdgeInsetsDirectional.only(end: value),
     child: this,
   );
 

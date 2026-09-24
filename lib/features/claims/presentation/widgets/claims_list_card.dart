@@ -138,7 +138,10 @@ class ClaimsListCard extends StatelessWidget {
                         ),
                         context.addVerticalSpace(2),
                         Text(
-                          ClaimDateFormatter.lastUpdated(claim.lastUpdated),
+                          ClaimDateFormatter.lastUpdated(
+                            strings,
+                            claim.lastUpdated,
+                          ),
                           style: context.font14Regular?.copyWith(
                             color: colors.textSecondaryColor,
                           ),

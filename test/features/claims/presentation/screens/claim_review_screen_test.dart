@@ -85,7 +85,7 @@ void main() {
     expect(find.text('ACTIVE', skipOffstage: false), findsOneWidget);
     expect(find.text('ACCIDENT', skipOffstage: false), findsOneWidget);
     expect(
-      find.text('Rear End Collision', skipOffstage: false),
+      find.text('Rear-end Collision', skipOffstage: false),
       findsOneWidget,
     );
     // Real accident values, not the field names.

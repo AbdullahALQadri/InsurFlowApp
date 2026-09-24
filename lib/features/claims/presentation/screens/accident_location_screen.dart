@@ -155,6 +155,7 @@ class AccidentLocationScreen extends StatelessWidget {
                                     label: strings.captured,
                                     value: location.hasCoordinates
                                         ? ClaimDateFormatter.capturedAt(
+                                            strings,
                                             location.capturedAt,
                                           )
                                         : strings.notAvailable,

@@ -411,8 +411,7 @@ class AppStrings {
       ? 'تم إرسال تقرير المعاينة إلى مسؤول المطالبات للمراجعة.'
       : 'Your inspection report has been sent to the claims officer for review.';
   String get backToHome => isArabic ? 'العودة للرئيسية' : 'Back to Home';
-  String get submittedClaimLabel =>
-      isArabic ? 'رقم المطالبة' : 'Claim';
+  String get submittedClaimLabel => isArabic ? 'رقم المطالبة' : 'Claim';
 
   // --- Notifications -----------------------------------------------------
 
@@ -423,6 +422,169 @@ class AppStrings {
   // response; the backend exposes no email or phone for mobile users.
 
   String get profile => isArabic ? 'الملف الشخصي' : 'Profile';
+
+  // --- Strings that were previously hardcoded in widgets ------------------
+
+  String get myTasks => isArabic ? 'مهامي' : 'My Tasks';
+  String myTasksSubtitle(int count) => isArabic
+      ? (count == 1 ? 'مهمة واحدة بانتظارك.' : '$count مهام بانتظارك.')
+      : (count == 1
+            ? '1 assignment on your plate.'
+            : '$count assignments on your plate.');
+
+  String updatedAt(String relative) =>
+      isArabic ? 'آخر تحديث $relative' : 'Updated $relative';
+
+  String get splashTagline =>
+      isArabic ? 'مطالبات ميدانية. ببساطة.' : 'Field Claims. Simplified.';
+  String get splashFooter =>
+      isArabic ? 'آمن  •  سريع  •  دقيق' : 'Secure  •  Fast  •  Accurate';
+
+  String get adjusterFallbackName => isArabic ? 'المُعاين' : 'Adjuster';
+
+  String get routeNotFound => isArabic ? 'الصفحة غير موجودة' : 'Page not found';
+
+  // --- Relative time ------------------------------------------------------
+
+  String minutesAgo(int minutes) =>
+      isArabic ? 'قبل $minutes د' : '${minutes}m ago';
+  String hoursAgo(int hours) => isArabic ? 'قبل $hours س' : '${hours}h ago';
+  String daysAgo(int days) => isArabic ? 'قبل $days ي' : '${days}d ago';
+
+  String get today => isArabic ? 'اليوم' : 'Today';
+  String get yesterday => isArabic ? 'أمس' : 'Yesterday';
+  String get timeAm => isArabic ? 'ص' : 'AM';
+  String get timePm => isArabic ? 'م' : 'PM';
+
+  /// Short month names. Index 0 is January.
+  List<String> get monthsShort => isArabic
+      ? const [
+          'يناير',
+          'فبراير',
+          'مارس',
+          'أبريل',
+          'مايو',
+          'يونيو',
+          'يوليو',
+          'أغسطس',
+          'سبتمبر',
+          'أكتوبر',
+          'نوفمبر',
+          'ديسمبر',
+        ]
+      : const [
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec',
+        ];
+
+  // --- Backend enums shown to the user ------------------------------------
+  //
+  // These are closed sets the backend validates against, so each known
+  // value has a translation. An unrecognised value is passed through as
+  // the backend spelled it rather than guessed at — the raw identifier
+  // is never translated.
+
+  String? claimStatusLabel(String? raw) {
+    switch (raw?.trim().toUpperCase()) {
+      case 'NEW':
+        return isArabic ? 'جديدة' : 'New';
+      case 'PENDING_ACCEPTANCE':
+        return isArabic ? 'بانتظار القبول' : 'Pending Acceptance';
+      case 'ASSIGNED':
+        return isArabic ? 'مُسندة' : 'Assigned';
+      case 'IN_PROGRESS':
+        return isArabic ? 'قيد التنفيذ' : 'In Progress';
+      case 'SUBMITTED':
+        return isArabic ? 'مُرسلة' : 'Submitted';
+      case 'UNDER_REVIEW':
+        return isArabic ? 'قيد المراجعة' : 'Under Review';
+      case 'CORRECTION_REQUIRED':
+        return isArabic ? 'تحتاج تصحيحاً' : 'Correction Required';
+      case 'APPROVED':
+        return isArabic ? 'مقبولة' : 'Approved';
+      case 'REJECTED':
+        return isArabic ? 'مرفوضة' : 'Rejected';
+      case 'CLOSED':
+        return isArabic ? 'مغلقة' : 'Closed';
+      default:
+        return humanizeEnum(raw);
+    }
+  }
+
+  String? incidentTypeLabelFor(String? raw) {
+    switch (raw?.trim().toUpperCase()) {
+      case 'COLLISION':
+        return isArabic ? 'اصطدام' : 'Collision';
+      case 'REAR_END_COLLISION':
+        return isArabic ? 'اصطدام خلفي' : 'Rear-end Collision';
+      case 'SIDE_IMPACT':
+        return isArabic ? 'اصطدام جانبي' : 'Side Impact';
+      case 'PARKING_DAMAGE':
+        return isArabic ? 'ضرر أثناء الوقوف' : 'Parking Damage';
+      case 'OTHER':
+        return isArabic ? 'أخرى' : 'Other';
+      default:
+        return humanizeEnum(raw);
+    }
+  }
+
+  String? evidenceTypeLabel(String? raw) {
+    switch (raw?.trim().toUpperCase()) {
+      case 'VEHICLE_FRONT':
+        return isArabic ? 'مقدمة المركبة' : 'Vehicle Front';
+      case 'VEHICLE_REAR':
+        return isArabic ? 'مؤخرة المركبة' : 'Vehicle Rear';
+      case 'VEHICLE_SIDE':
+        return isArabic ? 'جانب المركبة' : 'Vehicle Side';
+      case 'DAMAGE_CLOSEUP':
+        return isArabic ? 'لقطة قريبة للضرر' : 'Damage Close-up';
+      case 'DRIVER_LICENSE':
+        return isArabic ? 'رخصة القيادة' : 'Driver Licence';
+      case 'OTHER':
+        return isArabic ? 'أخرى' : 'Other';
+      default:
+        return humanizeEnum(raw);
+    }
+  }
+
+  String? priorityLabelFor(String? raw) {
+    switch (raw?.trim().toUpperCase()) {
+      case 'LOW':
+        return isArabic ? 'منخفضة' : 'Low';
+      case 'MEDIUM':
+        return isArabic ? 'متوسطة' : 'Medium';
+      case 'HIGH':
+        return isArabic ? 'عالية' : 'High';
+      case 'URGENT':
+        return isArabic ? 'عاجلة' : 'Urgent';
+      default:
+        return humanizeEnum(raw);
+    }
+  }
+
+  String? userRoleLabel(String? raw) {
+    switch (raw?.trim().toUpperCase()) {
+      case 'FIELD_ADJUSTER':
+        return isArabic ? 'مُعاين ميداني' : 'Field Adjuster';
+      case 'CLAIMS_OFFICER':
+        return isArabic ? 'مسؤول مطالبات' : 'Claims Officer';
+      case 'ADMIN':
+        return isArabic ? 'مدير النظام' : 'Admin';
+      default:
+        return humanizeEnum(raw);
+    }
+  }
+
   String get profileInformation =>
       isArabic ? 'المعلومات الشخصية' : 'PROFILE INFORMATION';
   String get accountInformation =>
@@ -453,8 +615,10 @@ class AppStrings {
   String get languageEnglish => 'English';
   String get languageArabic => 'العربية';
 
-  String get changePassword => isArabic ? 'تغيير كلمة المرور' : 'Change password';
-  String get currentPassword => isArabic ? 'كلمة المرور الحالية' : 'Current password';
+  String get changePassword =>
+      isArabic ? 'تغيير كلمة المرور' : 'Change password';
+  String get currentPassword =>
+      isArabic ? 'كلمة المرور الحالية' : 'Current password';
   String get newPassword => isArabic ? 'كلمة المرور الجديدة' : 'New password';
   String get confirmNewPassword =>
       isArabic ? 'تأكيد كلمة المرور الجديدة' : 'Confirm new password';
@@ -471,8 +635,7 @@ class AppStrings {
       : 'Current password is incorrect.';
   String get save => isArabic ? 'حفظ' : 'Save';
 
-  String get signOutConfirmTitle =>
-      isArabic ? 'تسجيل الخروج؟' : 'Sign out?';
+  String get signOutConfirmTitle => isArabic ? 'تسجيل الخروج؟' : 'Sign out?';
   String get signOutConfirmBody => isArabic
       ? 'سيتم مسح بيانات الجلسة من هذا الجهاز وستحتاج إلى تسجيل الدخول مرة أخرى.'
       : 'Your session will be cleared from this device and you will need to sign in again.';

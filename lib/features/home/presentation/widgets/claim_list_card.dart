@@ -5,6 +5,8 @@ import 'package:insurflow/core/global/design_system/font_weight/font_weight_help
 import 'package:insurflow/core/global/design_system/theme_data/theme_extension.dart';
 import 'package:insurflow/features/claims/domain/claim_preview.dart';
 import 'package:insurflow/features/home/presentation/widgets/claim_status_badge.dart';
+import 'package:insurflow/features/claims/presentation/utils/claim_date_formatter.dart';
+import 'package:insurflow/core/l10n/app_strings.dart';
 
 class ClaimListCard extends StatelessWidget {
   const ClaimListCard({
@@ -19,6 +21,7 @@ class ClaimListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final strings = AppStrings.of(context);
 
     return Material(
       color: colors.cardColor,
@@ -73,7 +76,9 @@ class ClaimListCard extends StatelessWidget {
                 context.addVerticalSpace(6),
                 _MetaRow(
                   icon: Icons.schedule_outlined,
-                  value: 'Updated ${_relativeTime(claim.lastUpdated)}',
+                  value: strings.updatedAt(
+                    ClaimDateFormatter.relative(strings, claim.lastUpdated),
+                  ),
                 ),
                 context.addVerticalSpace(14),
                 Align(
@@ -104,16 +109,6 @@ class ClaimListCard extends StatelessWidget {
     );
   }
 
-  String _relativeTime(DateTime time) {
-    final diff = DateTime.now().difference(time);
-    if (diff.inMinutes < 60) {
-      return '${diff.inMinutes}m ago';
-    }
-    if (diff.inHours < 24) {
-      return '${diff.inHours}h ago';
-    }
-    return '${diff.inDays}d ago';
-  }
 }
 
 class _MetaRow extends StatelessWidget {
@@ -128,11 +123,7 @@ class _MetaRow extends StatelessWidget {
 
     return Row(
       children: [
-        Icon(
-          icon,
-          size: context.width(16),
-          color: colors.textSecondaryColor,
-        ),
+        Icon(icon, size: context.width(16), color: colors.textSecondaryColor),
         context.addHorizontalSpace(6),
         Expanded(
           child: Text(

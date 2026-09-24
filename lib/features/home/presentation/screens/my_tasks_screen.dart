@@ -60,7 +60,7 @@ class MyTasksScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'My Tasks',
+                          strings.myTasks,
                           style: context.font26Bold?.copyWith(
                             color: AppSplashColors.navy,
                             fontWeight: FontWeightHelper.bold,
@@ -68,7 +68,7 @@ class MyTasksScreen extends StatelessWidget {
                         ),
                         context.addVerticalSpace(6),
                         Text(
-                          '${tasks.length} assignments on your plate.',
+                          strings.myTasksSubtitle(tasks.length),
                           style: context.font14Regular?.copyWith(
                             color: colors.textSecondaryColor,
                           ),

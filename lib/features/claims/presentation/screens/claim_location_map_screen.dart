@@ -77,10 +77,7 @@ class ClaimLocationMapScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: Padding(
-                  padding: context.spaceSymmetric(
-                    vertical: 8,
-                    horizontal: 16,
-                  ),
+                  padding: context.spaceSymmetric(vertical: 8, horizontal: 16),
                   child: ClaimLocationMap(
                     point: point,
                     markerId: args.markerId,
@@ -169,7 +166,7 @@ class _LocationFacts extends StatelessWidget {
                 ),
                 context.addVerticalSpace(2),
                 Text(
-                  ClaimDateFormatter.capturedAt(point.capturedAt!),
+                  ClaimDateFormatter.capturedAt(strings, point.capturedAt!),
                   style: context.font16Bold?.copyWith(
                     color: colors.textPrimaryColor,
                     fontWeight: FontWeightHelper.semiBold,

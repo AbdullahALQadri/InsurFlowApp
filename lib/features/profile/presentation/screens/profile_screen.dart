@@ -9,7 +9,6 @@ import 'package:insurflow/core/l10n/app_strings.dart';
 import 'package:insurflow/core/preferences/app_preferences.dart';
 import 'package:insurflow/features/authentication/domain/entities/auth_session.dart';
 import 'package:insurflow/features/authentication/presentation/bloc/auth_bloc.dart';
-import 'package:insurflow/features/claims/domain/entities/claim_details.dart';
 import 'package:insurflow/features/notifications/presentation/cubit/notification_center_cubit.dart';
 import 'package:insurflow/features/notifications/presentation/screens/notification_center_screen.dart';
 import 'package:insurflow/features/profile/presentation/cubit/app_preferences_cubit.dart';
@@ -82,9 +81,9 @@ class ProfileScreen extends StatelessWidget {
       ProfileRow.ifPresent(
         icon: Icons.work_outline_rounded,
         label: strings.roleLabel,
-        // `FIELD_ADJUSTER` -> `Field Adjuster`; the value is the
-        // backend's, only re-cased for reading.
-        value: humanizeEnum(session?.role),
+        // A known backend role gets a translation; anything new is
+        // shown as the backend spelled it.
+        value: strings.userRoleLabel(session?.role),
       ),
     ].whereType<ProfileRow>().toList();
 
@@ -184,10 +183,7 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _sectionWrapper(BuildContext context, Widget child) {
-    return Padding(
-      padding: context.spaceBottom(20),
-      child: child,
-    );
+    return Padding(padding: context.spaceBottom(20), child: child);
   }
 
   /// Drops the divider under the final row of a section.
@@ -217,7 +213,7 @@ class _ProfileHeader extends StatelessWidget {
     final colors = context.colors;
     final strings = AppStrings.of(context);
     final name = session?.displayNameOrCode;
-    final role = humanizeEnum(session?.role);
+    final role = strings.userRoleLabel(session?.role);
     final initial = session?.initial;
 
     return Column(
@@ -323,10 +319,7 @@ class _LanguageRow extends StatelessWidget {
     );
   }
 
-  Future<void> _pick(
-    BuildContext context,
-    AppPreferences preferences,
-  ) async {
+  Future<void> _pick(BuildContext context, AppPreferences preferences) async {
     final strings = AppStrings.of(context);
     final cubit = context.read<AppPreferencesCubit>();
 
@@ -373,10 +366,7 @@ class _ThemeRow extends StatelessWidget {
     );
   }
 
-  Future<void> _pick(
-    BuildContext context,
-    AppPreferences preferences,
-  ) async {
+  Future<void> _pick(BuildContext context, AppPreferences preferences) async {
     final strings = AppStrings.of(context);
     final cubit = context.read<AppPreferencesCubit>();
 

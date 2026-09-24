@@ -9,6 +9,7 @@ import 'package:insurflow/core/global/design_system/widgets/app_primary_button.d
 import 'package:insurflow/features/claims/domain/claim_preview.dart';
 import 'package:insurflow/features/claims/domain/claim_status.dart';
 import 'package:insurflow/features/home/presentation/widgets/claim_status_badge.dart';
+import 'package:insurflow/core/l10n/app_strings.dart';
 
 class NeedsAttentionCard extends StatelessWidget {
   const NeedsAttentionCard({
@@ -24,6 +25,7 @@ class NeedsAttentionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final accent = ClaimStatusColors.correctionRequired;
+    final strings = AppStrings.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -102,7 +104,7 @@ class NeedsAttentionCard extends StatelessWidget {
                     ],
                     context.addVerticalSpace(16),
                     AppPrimaryButton(
-                      label: 'Fix Claim',
+                      label: strings.fixCorrection,
                       onPressed: onFixClaim,
                     ),
                   ],

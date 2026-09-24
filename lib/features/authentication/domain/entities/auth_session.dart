@@ -55,7 +55,9 @@ class AuthSession {
     return (code != null && code.isNotEmpty) ? code : null;
   }
 
-  String greetingName({String fallback = 'Adjuster'}) =>
+  /// Callers pass a localized fallback; there is no English default so
+  /// an untranslated word cannot leak into the Arabic UI.
+  String greetingName({required String fallback}) =>
       displayNameOrCode ?? fallback;
 
   /// First letter of the display name, for the avatar. Null when there
