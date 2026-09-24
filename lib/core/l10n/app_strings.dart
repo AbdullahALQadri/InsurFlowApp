@@ -406,6 +406,66 @@ class AppStrings {
   // --- Notifications -----------------------------------------------------
 
   String get notifications => isArabic ? 'الإشعارات' : 'Notifications';
+
+  // --- Profile -----------------------------------------------------------
+  // Labels only. Every value shown on Profile comes from the login
+  // response; the backend exposes no email or phone for mobile users.
+
+  String get profile => isArabic ? 'الملف الشخصي' : 'Profile';
+  String get profileInformation =>
+      isArabic ? 'المعلومات الشخصية' : 'PROFILE INFORMATION';
+  String get accountInformation =>
+      isArabic ? 'معلومات الحساب' : 'ACCOUNT INFORMATION';
+  String get preferencesSection => isArabic ? 'التفضيلات' : 'PREFERENCES';
+  String get securitySection => isArabic ? 'الأمان' : 'SECURITY';
+
+  String get fullNameLabel => isArabic ? 'الاسم الكامل' : 'Full name';
+  String get employeeCodeLabel => isArabic ? 'الرقم الوظيفي' : 'Employee code';
+  String get roleLabel => isArabic ? 'الدور' : 'Role';
+  String get organizationLabel => isArabic ? 'المؤسسة' : 'Organization';
+  String get organizationCodeLabel =>
+      isArabic ? 'رمز المؤسسة' : 'Organization code';
+  String get userIdLabel => isArabic ? 'معرّف المستخدم' : 'User ID';
+
+  String get languageLabel => isArabic ? 'اللغة' : 'Language';
+  String get themeLabel => isArabic ? 'المظهر' : 'Theme';
+  String get themeSystem => isArabic ? 'حسب النظام' : 'System';
+  String get themeLight => isArabic ? 'فاتح' : 'Light';
+  String get themeDark => isArabic ? 'داكن' : 'Dark';
+  String get languageSystem => isArabic ? 'حسب النظام' : 'System';
+  String get languageEnglish => 'English';
+  String get languageArabic => 'العربية';
+
+  String get changePassword => isArabic ? 'تغيير كلمة المرور' : 'Change password';
+  String get currentPassword => isArabic ? 'كلمة المرور الحالية' : 'Current password';
+  String get newPassword => isArabic ? 'كلمة المرور الجديدة' : 'New password';
+  String get confirmNewPassword =>
+      isArabic ? 'تأكيد كلمة المرور الجديدة' : 'Confirm new password';
+  String get passwordChanged => isArabic
+      ? 'تم تغيير كلمة المرور بنجاح.'
+      : 'Password changed successfully.';
+  String get passwordsDoNotMatch =>
+      isArabic ? 'كلمتا المرور غير متطابقتين.' : 'Passwords do not match.';
+  String passwordTooShort(int minimum) => isArabic
+      ? 'يجب أن تتكون كلمة المرور من $minimum أحرف على الأقل.'
+      : 'Password must be at least $minimum characters.';
+  String get currentPasswordIncorrect => isArabic
+      ? 'كلمة المرور الحالية غير صحيحة.'
+      : 'Current password is incorrect.';
+  String get save => isArabic ? 'حفظ' : 'Save';
+
+  String get signOutConfirmTitle =>
+      isArabic ? 'تسجيل الخروج؟' : 'Sign out?';
+  String get signOutConfirmBody => isArabic
+      ? 'سيتم مسح بيانات الجلسة من هذا الجهاز وستحتاج إلى تسجيل الدخول مرة أخرى.'
+      : 'Your session will be cleared from this device and you will need to sign in again.';
+  String get notificationSettings =>
+      isArabic ? 'إعدادات الإشعارات' : 'Notification settings';
+  String get notificationsOn => isArabic ? 'مفعّلة' : 'On';
+  String get notificationsOff => isArabic ? 'معطّلة' : 'Off';
+  String get profileFieldUnavailable => isArabic
+      ? 'لم يُرجع الخادم هذه البيانات.'
+      : 'Not provided by the backend.';
   String get notificationsEmptyTitle =>
       isArabic ? 'لا توجد إشعارات' : 'No notifications';
   String get notificationsEmptyBody => isArabic

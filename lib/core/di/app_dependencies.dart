@@ -6,7 +6,10 @@ import 'package:insurflow/features/authentication/data/datasources/auth_local_da
 import 'package:insurflow/features/authentication/data/datasources/auth_remote_data_source.dart';
 import 'package:insurflow/features/authentication/data/repositories/auth_repository_impl.dart';
 import 'package:insurflow/features/authentication/domain/repositories/auth_repository.dart';
+import 'package:insurflow/core/preferences/app_preferences.dart';
+import 'package:insurflow/features/authentication/domain/usecases/change_password_usecase.dart';
 import 'package:insurflow/features/authentication/domain/usecases/login_usecase.dart';
+import 'package:insurflow/features/profile/presentation/cubit/app_preferences_cubit.dart';
 import 'package:insurflow/features/authentication/domain/usecases/logout_usecase.dart';
 import 'package:insurflow/features/authentication/domain/usecases/restore_session_usecase.dart';
 import 'package:insurflow/features/authentication/presentation/bloc/auth_bloc.dart';
@@ -60,6 +63,8 @@ class AppDependencies {
     required this.notificationsRepository,
     required this.registerDeviceTokenUseCase,
     required this.pushNotificationService,
+    required this.changePasswordUseCase,
+    required this.appPreferencesStore,
   });
 
   final TokenStore tokenStore;
@@ -84,6 +89,8 @@ class AppDependencies {
   final NotificationsRepository notificationsRepository;
   final RegisterDeviceTokenUseCase registerDeviceTokenUseCase;
   final PushNotificationService pushNotificationService;
+  final ChangePasswordUseCase changePasswordUseCase;
+  final AppPreferencesStore appPreferencesStore;
 
   static AppDependencies? _instance;
 
@@ -141,6 +148,8 @@ class AppDependencies {
       pushNotificationService: PushNotificationService(
         registerDeviceTokenUseCase: registerDeviceToken,
       ),
+      changePasswordUseCase: ChangePasswordUseCase(authRepository),
+      appPreferencesStore: SecureAppPreferencesStore(),
     );
     return _instance!;
   }
@@ -164,6 +173,10 @@ class AppDependencies {
       getClaimDetailsUseCase: getClaimDetailsUseCase,
       startClaimUseCase: startClaimUseCase,
     );
+  }
+
+  AppPreferencesCubit createAppPreferencesCubit() {
+    return AppPreferencesCubit(store: appPreferencesStore);
   }
 
   NotificationCenterCubit createNotificationCenterCubit() {

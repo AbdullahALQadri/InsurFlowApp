@@ -6,21 +6,28 @@ class SecureTokenStore implements TokenStore {
     : _storage = storage ?? const FlutterSecureStorage();
 
   static const _accessTokenKey = 'insurflow.access_token';
+  static const _sessionKey = 'insurflow.session';
 
   final FlutterSecureStorage _storage;
 
   @override
-  Future<String?> readAccessToken() {
-    return _storage.read(key: _accessTokenKey);
-  }
+  Future<String?> readAccessToken() => _storage.read(key: _accessTokenKey);
 
   @override
-  Future<void> saveAccessToken(String token) {
-    return _storage.write(key: _accessTokenKey, value: token);
-  }
+  Future<void> saveAccessToken(String token) =>
+      _storage.write(key: _accessTokenKey, value: token);
 
   @override
-  Future<void> clear() {
-    return _storage.delete(key: _accessTokenKey);
+  Future<String?> readSession() => _storage.read(key: _sessionKey);
+
+  @override
+  Future<void> saveSession(String sessionJson) =>
+      _storage.write(key: _sessionKey, value: sessionJson);
+
+  @override
+  Future<void> clear() async {
+    // Sign-out must leave nothing behind for the next user of the device.
+    await _storage.delete(key: _accessTokenKey);
+    await _storage.delete(key: _sessionKey);
   }
 }

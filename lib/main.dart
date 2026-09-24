@@ -10,9 +10,11 @@ import 'package:insurflow/core/global/design_system/app_color/app_splash_colors.
 import 'package:insurflow/core/global/design_system/theme_data/app_theme.dart';
 import 'package:insurflow/core/l10n/app_strings.dart';
 import 'package:insurflow/core/routing/app_router.dart';
+import 'package:insurflow/core/preferences/app_preferences.dart';
 import 'package:insurflow/core/routing/routes.dart';
 import 'package:insurflow/core/services/push_notification_service.dart';
 import 'package:insurflow/features/notifications/presentation/widgets/notification_gateway.dart';
+import 'package:insurflow/features/profile/presentation/cubit/app_preferences_cubit.dart';
 import 'package:insurflow/firebase_options.dart';
 
 Future<void> main() async {
@@ -61,28 +63,38 @@ class InsurFlowApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => dependencies.createAuthBloc()),
-        BlocProvider(create: (_) => dependencies.createNotificationCenterCubit()),
+        BlocProvider(
+          create: (_) => dependencies.createNotificationCenterCubit(),
+        ),
+        BlocProvider(
+          create: (_) => dependencies.createAppPreferencesCubit()..load(),
+        ),
       ],
-      child: MaterialApp(
-        title: 'InsurFlow',
-        debugShowCheckedModeBanner: false,
-        navigatorKey: navigatorKey,
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system,
-        supportedLocales: const [Locale('en'), Locale('ar')],
-        localizationsDelegates: const [
-          AppStringsDelegate(),
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        initialRoute: Routes.splashScreen,
-        onGenerateRoute: appRouter.generateRoute,
-        builder: (context, child) => NotificationGateway(
-          service: dependencies.pushNotificationService,
+      child: BlocBuilder<AppPreferencesCubit, AppPreferences>(
+        builder: (context, preferences) => MaterialApp(
+          title: 'InsurFlow',
+          debugShowCheckedModeBanner: false,
           navigatorKey: navigatorKey,
-          child: child ?? const SizedBox.shrink(),
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          // Both follow the saved preference; ThemeMode.system and a null
+          // locale keep the previous behaviour of following the device.
+          themeMode: preferences.themeMode,
+          locale: preferences.locale,
+          supportedLocales: const [Locale('en'), Locale('ar')],
+          localizationsDelegates: const [
+            AppStringsDelegate(),
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          initialRoute: Routes.splashScreen,
+          onGenerateRoute: appRouter.generateRoute,
+          builder: (context, child) => NotificationGateway(
+            service: dependencies.pushNotificationService,
+            navigatorKey: navigatorKey,
+            child: child ?? const SizedBox.shrink(),
+          ),
         ),
       ),
     );

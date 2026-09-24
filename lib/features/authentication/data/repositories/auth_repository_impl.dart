@@ -57,4 +57,22 @@ class AuthRepositoryImpl implements AuthRepository {
       return const Left(CacheFailure());
     }
   }
+
+  @override
+  Future<Either<Failure, void>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      await _remote.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      return const Right(null);
+    } on DioException catch (error) {
+      return Left(FailureMapper.fromDio(error));
+    } catch (_) {
+      return const Left(UnexpectedFailure());
+    }
+  }
 }

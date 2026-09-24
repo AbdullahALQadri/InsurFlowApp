@@ -7,6 +7,11 @@ abstract class AuthRemoteDataSource {
     required String employeeCode,
     required String password,
   });
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  });
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -29,7 +34,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       },
     );
 
-    final session = AuthSessionModel.fromResponse(response.data);
+    // The backend does not echo organizationCode, so carry through the
+    // value the user signed in with.
+    final session = AuthSessionModel.fromResponse(
+      response.data,
+      organizationCode: organizationCode,
+    );
     if (session == null) {
       throw DioException(
         requestOptions: response.requestOptions,
@@ -39,5 +49,27 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
     }
     return session;
+  }
+
+  /// `PUT /auth/change-password`
+  ///
+  /// Verified against the live backend as a FIELD_ADJUSTER:
+  /// * body `{currentPassword, newPassword}`, both required;
+  /// * `newPassword` must be at least 8 characters — that is the only
+  ///   rule the server enforces;
+  /// * 401 `INVALID_CREDENTIALS` when `currentPassword` is wrong;
+  /// * 200 on success.
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await _dio.put<dynamic>(
+      '/auth/change-password',
+      data: {
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      },
+    );
   }
 }

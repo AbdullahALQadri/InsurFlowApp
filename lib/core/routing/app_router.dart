@@ -29,6 +29,7 @@ import 'package:insurflow/features/claims/presentation/screens/vehicle_informati
 import 'package:insurflow/features/claims/presentation/screens/vehicle_lookup_screen.dart';
 import 'package:insurflow/features/home/presentation/screens/main_screen.dart';
 import 'package:insurflow/features/notifications/presentation/screens/notification_center_screen.dart';
+import 'package:insurflow/features/profile/presentation/screens/change_password_screen.dart';
 import 'package:insurflow/features/splash/presentation/screens/splash_screen.dart';
 
 class AppRouter {
@@ -206,6 +207,11 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => ClaimValidationScreen(args: validation),
         );
+      case Routes.changePasswordScreen:
+        return MaterialPageRoute(
+          builder: (_) => const ChangePasswordScreen(),
+        );
+
       case Routes.notificationCenterScreen:
         return MaterialPageRoute(
           builder: (_) => const NotificationCenterScreen(),

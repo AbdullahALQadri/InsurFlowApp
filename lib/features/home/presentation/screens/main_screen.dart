@@ -12,7 +12,7 @@ import 'package:insurflow/features/authentication/presentation/bloc/auth_bloc.da
 import 'package:insurflow/features/claims/presentation/bloc/claims_bloc.dart';
 import 'package:insurflow/features/home/presentation/screens/home_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/claims_list_screen.dart';
-import 'package:insurflow/features/home/presentation/screens/profile_screen.dart';
+import 'package:insurflow/features/profile/presentation/screens/profile_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
