@@ -18,6 +18,7 @@ import 'package:insurflow/features/claims/presentation/screens/claim_review_scre
 import 'package:insurflow/features/claims/presentation/screens/claim_validation_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/document_preview_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/claim_details_screen.dart';
+import 'package:insurflow/features/claims/presentation/screens/claim_submitted_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/claim_location_map_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/claims_list_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/new_assignment_screen.dart';
@@ -215,6 +216,16 @@ class AppRouter {
       case Routes.notificationCenterScreen:
         return MaterialPageRoute(
           builder: (_) => const NotificationCenterScreen(),
+        );
+
+      case Routes.claimSubmittedScreen:
+        final args = settings.arguments;
+        return MaterialPageRoute(
+          builder: (_) => ClaimSubmittedScreen(
+            args: args is ClaimSubmittedArgs
+                ? args
+                : const ClaimSubmittedArgs(),
+          ),
         );
 
       case Routes.claimLocationMapScreen:

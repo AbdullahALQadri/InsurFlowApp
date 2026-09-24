@@ -13,6 +13,7 @@ import 'package:insurflow/core/l10n/app_strings.dart';
 import 'package:insurflow/core/routing/routes.dart';
 import 'package:insurflow/features/claims/domain/claim_validation_progress.dart';
 import 'package:insurflow/features/claims/domain/inspection_progress.dart';
+import 'package:insurflow/features/claims/presentation/screens/claim_submitted_screen.dart';
 import 'package:insurflow/features/claims/presentation/widgets/claim_validation_animation.dart';
 import 'package:insurflow/features/claims/presentation/widgets/claim_validation_checks.dart';
 import 'package:insurflow/features/claims/presentation/widgets/submit_claim_confirmation_sheet.dart';
@@ -242,10 +243,12 @@ class _ClaimValidationScreenState extends State<ClaimValidationScreen>
         (_) {
           InspectionProgress.completeAll(widget.args.claimId);
           messenger.hideCurrentSnackBar();
-          messenger.showSnackBar(
-            SnackBar(content: Text(strings.claimSubmitted)),
+          // The success screen carries the confirmation now, so the
+          // snackbar would only compete with it.
+          ClaimSubmittedScreen.open(
+            context,
+            claimNumber: widget.args.claimNumber,
           );
-          Navigator.of(context).popUntil((route) => route.isFirst);
         },
       );
     } catch (_) {

@@ -403,6 +403,17 @@ class AppStrings {
 
   String get claimLocation => isArabic ? 'موقع المطالبة' : 'Claim Location';
 
+  // --- Claim submitted success screen ------------------------------------
+
+  String get claimSubmittedTitle =>
+      isArabic ? 'تم إرسال التقرير' : 'Report submitted';
+  String get claimSubmittedBody => isArabic
+      ? 'تم إرسال تقرير المعاينة إلى مسؤول المطالبات للمراجعة.'
+      : 'Your inspection report has been sent to the claims officer for review.';
+  String get backToHome => isArabic ? 'العودة للرئيسية' : 'Back to Home';
+  String get submittedClaimLabel =>
+      isArabic ? 'رقم المطالبة' : 'Claim';
+
   // --- Notifications -----------------------------------------------------
 
   String get notifications => isArabic ? 'الإشعارات' : 'Notifications';
