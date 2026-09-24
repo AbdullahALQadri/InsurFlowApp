@@ -457,6 +457,53 @@ class AppStrings {
   String updatedAt(String relative) =>
       isArabic ? 'آخر تحديث $relative' : 'Updated $relative';
 
+  // --- Onboarding ---------------------------------------------------------
+  //
+  // Each page describes a step this app actually performs, so the
+  // promise matches the product: assignments are offered and accepted,
+  // a plate resolves the vehicle/customer/policy, the accident and GPS
+  // fix are recorded on site, evidence and a signature are uploaded,
+  // and the report is reviewed before submission.
+
+  String get onboardingSkip => isArabic ? 'تخطٍ' : 'Skip';
+  String get onboardingNext => isArabic ? 'التالي' : 'Next';
+  String get onboardingBack => isArabic ? 'السابق' : 'Back';
+  String get onboardingGetStarted => isArabic ? 'ابدأ الآن' : 'Get Started';
+
+  String get onboardingAssignmentsTitle =>
+      isArabic ? 'مهامك، بقرارك' : 'Assignments, on your terms';
+  String get onboardingAssignmentsBody => isArabic
+      ? 'تصلك المطالبات الجديدة مع تفاصيلها وأولويتها. اقبل الإسناد عندما تكون متاحاً، وابدأ المعاينة فوراً.'
+      : 'New claims arrive with their details and priority. Accept an assignment when you are available, then start the inspection right away.';
+
+  String get onboardingVehicleTitle =>
+      isArabic ? 'تعرّف على المركبة فوراً' : 'Identify the vehicle instantly';
+  String get onboardingVehicleBody => isArabic
+      ? 'امسح لوحة المركبة أو أدخلها يدوياً، ليتم جلب بيانات المركبة والعميل ووثيقة التأمين وربطها بالمطالبة.'
+      : 'Scan the plate or type it in, and the vehicle, customer and insurance policy are looked up and linked to the claim.';
+
+  String get onboardingSceneTitle =>
+      isArabic ? 'وثّق الحادث في موقعه' : 'Capture the scene on site';
+  String get onboardingSceneBody => isArabic
+      ? 'سجّل نوع الحادث وتاريخه ووصف الأضرار، مع تثبيت إحداثيات الموقع الفعلي للمعاينة.'
+      : 'Record the accident type, date and damage description, with the real GPS coordinates of where you inspected.';
+
+  String get onboardingEvidenceTitle =>
+      isArabic ? 'أدلة لا تحتاج شرحاً' : 'Evidence that speaks for itself';
+  String get onboardingEvidenceBody => isArabic
+      ? 'التقط صور المركبة والأضرار، أرفق المستندات، واحصل على توقيع العميل — كلها محفوظة مع المطالبة.'
+      : 'Photograph the vehicle and the damage, attach documents, and capture the customer signature — all stored with the claim.';
+
+  String get onboardingSubmitTitle =>
+      isArabic ? 'راجع وأرسل بثقة' : 'Review and submit with confidence';
+  String get onboardingSubmitBody => isArabic
+      ? 'راجع كل قسم قبل الإرسال، وتأكد من اكتمال التقرير، ثم أرسله إلى مسؤول المطالبات بضغطة واحدة.'
+      : 'Check every section before you send, confirm the report is complete, and submit it to the claims officer in one tap.';
+
+  String onboardingPageIndicator(int page, int total) => isArabic
+      ? 'الشاشة $page من $total'
+      : 'Page $page of $total';
+
   String get splashTagline =>
       isArabic ? 'مطالبات ميدانية. ببساطة.' : 'Field Claims. Simplified.';
   String get splashFooter =>

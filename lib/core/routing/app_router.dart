@@ -29,6 +29,7 @@ import 'package:insurflow/features/claims/presentation/screens/vehicle_identific
 import 'package:insurflow/features/claims/presentation/screens/vehicle_information_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/vehicle_lookup_screen.dart';
 import 'package:insurflow/features/home/presentation/screens/main_screen.dart';
+import 'package:insurflow/features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'package:insurflow/features/notifications/presentation/screens/notification_center_screen.dart';
 import 'package:insurflow/features/profile/presentation/screens/change_password_screen.dart';
 import 'package:insurflow/features/splash/presentation/screens/splash_screen.dart';
@@ -41,6 +42,9 @@ class AppRouter {
     switch (settings.name) {
       case Routes.splashScreen:
         return MaterialPageRoute(builder: (_) => const SplashScreen());
+      case Routes.onboardingScreen:
+        return MaterialPageRoute(builder: (_) => const OnboardingScreen());
+
       case Routes.loginScreen:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
       case Routes.mainScreen:

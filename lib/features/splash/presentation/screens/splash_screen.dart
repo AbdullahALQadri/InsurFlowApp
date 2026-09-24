@@ -17,6 +17,8 @@ import 'package:insurflow/features/splash/presentation/widgets/splash_brand_mark
 import 'package:insurflow/features/splash/presentation/widgets/splash_flow_lines.dart';
 import 'package:lottie/lottie.dart';
 import 'package:insurflow/core/l10n/app_strings.dart';
+import 'package:insurflow/features/profile/presentation/cubit/app_preferences_cubit.dart';
+import 'package:insurflow/core/preferences/app_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -120,6 +122,19 @@ class _SplashScreenState extends State<SplashScreen>
 
   void _navigateIfReady(AuthState state) {
     if (!_animationDone || !mounted) return;
+
+    // Onboarding runs before sign-in, and only until the user has seen
+    // it. An already-authenticated session skips it: they have clearly
+    // used the app before.
+    final preferences = context.read<AppPreferencesCubit>().state;
+    // Acting before the read completes would show onboarding again to
+    // someone who has already seen it.
+    if (!preferences.isLoaded) return;
+    if (state is AuthUnauthenticated && !preferences.hasCompletedOnboarding) {
+      context.pushReplacementNamed(Routes.onboardingScreen);
+      return;
+    }
+
     if (state is AuthAuthenticated) {
       context.pushReplacementNamed(Routes.mainScreen);
     } else if (state is AuthUnauthenticated) {
@@ -164,8 +179,20 @@ class _SplashScreenState extends State<SplashScreen>
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: overlay,
-      child: BlocListener<AuthBloc, AuthState>(
-        listener: (context, state) => _navigateIfReady(state),
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<AuthBloc, AuthState>(
+            listener: (context, state) => _navigateIfReady(state),
+          ),
+          // Preferences load asynchronously; re-evaluate when they
+          // arrive so a late read still routes correctly.
+          BlocListener<AppPreferencesCubit, AppPreferences>(
+            listenWhen: (previous, current) =>
+                previous.isLoaded != current.isLoaded,
+            listener: (context, _) =>
+                _navigateIfReady(context.read<AuthBloc>().state),
+          ),
+        ],
         child: Scaffold(
         backgroundColor: AppSplashColors.midnight,
         body: Stack(

@@ -13,6 +13,15 @@ class AppPreferencesCubit extends Cubit<AppPreferences> {
 
   Future<void> load() async => emit(await _store.read());
 
+  /// Records that onboarding is done, whether it was completed or
+  /// skipped — both mean the user has seen it.
+  Future<void> completeOnboarding() async {
+    if (state.hasCompletedOnboarding) return;
+    final updated = state.copyWith(hasCompletedOnboarding: true);
+    emit(updated);
+    await _store.write(updated);
+  }
+
   Future<void> setThemeMode(ThemeMode mode) async {
     if (mode == state.themeMode) return;
     final updated = state.copyWith(themeMode: mode);

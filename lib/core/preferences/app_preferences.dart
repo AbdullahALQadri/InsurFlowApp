@@ -14,6 +14,8 @@ class AppPreferences {
     this.localeCode,
     this.themeMode = ThemeMode.system,
     this.accentValue,
+    this.hasCompletedOnboarding = false,
+    this.isLoaded = false,
   });
 
   /// `en`, `ar`, or null to follow the device language.
@@ -32,6 +34,22 @@ class AppPreferences {
 
   bool get followsSystemLanguage => localeCode == null;
 
+  /// True once the user has finished or skipped onboarding.
+  ///
+  /// Persisted with the other preferences, so it survives an app close,
+  /// a restart and a device reboot. It is deliberately **not** cleared
+  /// on sign-out — onboarding explains the product, not the session —
+  /// and it disappears only on uninstall, which is what makes a fresh
+  /// install show onboarding again.
+  final bool hasCompletedOnboarding;
+
+  /// False until the stored preferences have been read.
+  ///
+  /// Callers that branch on a preference — the splash deciding whether
+  /// to show onboarding — must wait for this, or they would act on
+  /// defaults and show onboarding to a returning user.
+  final bool isLoaded;
+
   Color? get accent => accentValue == null ? null : Color(accentValue!);
 
   bool get usesCustomAccent => accentValue != null;
@@ -40,6 +58,8 @@ class AppPreferences {
     String? localeCode,
     ThemeMode? themeMode,
     int? accentValue,
+    bool? hasCompletedOnboarding,
+    bool? isLoaded,
     bool clearLocale = false,
     bool clearAccent = false,
   }) {
@@ -47,6 +67,9 @@ class AppPreferences {
       localeCode: clearLocale ? null : (localeCode ?? this.localeCode),
       themeMode: themeMode ?? this.themeMode,
       accentValue: clearAccent ? null : (accentValue ?? this.accentValue),
+      hasCompletedOnboarding:
+          hasCompletedOnboarding ?? this.hasCompletedOnboarding,
+      isLoaded: isLoaded ?? this.isLoaded,
     );
   }
 
@@ -54,6 +77,7 @@ class AppPreferences {
     if (localeCode != null) 'localeCode': localeCode,
     'themeMode': themeMode.name,
     if (accentValue != null) 'accentValue': accentValue,
+    'hasCompletedOnboarding': hasCompletedOnboarding,
   };
 
   static AppPreferences fromJson(Map<String, dynamic> json) {
@@ -70,6 +94,11 @@ class AppPreferences {
       // A malformed accent falls back to the brand colour rather than
       // producing an unreadable theme.
       accentValue: accent is int ? accent : null,
+      // Anything other than an explicit true means onboarding has not
+      // been completed, so a corrupt value shows it rather than
+      // silently skipping it.
+      hasCompletedOnboarding: json['hasCompletedOnboarding'] == true,
+      isLoaded: true,
     );
   }
 }
@@ -92,13 +121,16 @@ class SecureAppPreferencesStore implements AppPreferencesStore {
   Future<AppPreferences> read() async {
     try {
       final raw = await _storage.read(key: _key);
-      if (raw == null || raw.isEmpty) return const AppPreferences();
+      // Nothing stored yet is still a completed read.
+      if (raw == null || raw.isEmpty) {
+        return const AppPreferences(isLoaded: true);
+      }
       final decoded = jsonDecode(raw);
-      if (decoded is! Map) return const AppPreferences();
+      if (decoded is! Map) return const AppPreferences(isLoaded: true);
       return AppPreferences.fromJson(Map<String, dynamic>.from(decoded));
     } catch (_) {
       // Unreadable preferences must never block startup.
-      return const AppPreferences();
+      return const AppPreferences(isLoaded: true);
     }
   }
 
@@ -113,7 +145,9 @@ class SecureAppPreferencesStore implements AppPreferencesStore {
 }
 
 class InMemoryAppPreferencesStore implements AppPreferencesStore {
-  InMemoryAppPreferencesStore([this._preferences = const AppPreferences()]);
+  InMemoryAppPreferencesStore([
+    this._preferences = const AppPreferences(isLoaded: true),
+  ]);
 
   AppPreferences _preferences;
 

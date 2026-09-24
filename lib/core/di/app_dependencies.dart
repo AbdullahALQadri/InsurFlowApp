@@ -105,7 +105,13 @@ class AppDependencies {
     return current;
   }
 
-  static AppDependencies init({TokenStore? tokenStore}) {
+  /// [preferencesStore] is injectable for the same reason as
+  /// [tokenStore]: tests need a store that does not touch the device
+  /// keychain.
+  static AppDependencies init({
+    TokenStore? tokenStore,
+    AppPreferencesStore? preferencesStore,
+  }) {
     final store = tokenStore ?? SecureTokenStore();
     final dio = DioFactory.create(tokenStore: store);
     final authRepository = AuthRepositoryImpl(
@@ -153,7 +159,7 @@ class AppDependencies {
         registerDeviceTokenUseCase: registerDeviceToken,
       ),
       changePasswordUseCase: ChangePasswordUseCase(authRepository),
-      appPreferencesStore: SecureAppPreferencesStore(),
+      appPreferencesStore: preferencesStore ?? SecureAppPreferencesStore(),
     );
     return _instance!;
   }
