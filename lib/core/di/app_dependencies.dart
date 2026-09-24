@@ -23,8 +23,10 @@ import 'package:insurflow/features/claims/domain/usecases/lookup_vehicle.dart';
 import 'package:insurflow/features/claims/domain/usecases/start_claim.dart';
 import 'package:insurflow/features/claims/domain/usecases/submit_claim.dart';
 import 'package:insurflow/features/claims/presentation/bloc/claim_details_bloc.dart';
+import 'package:insurflow/features/claims/presentation/cubit/accident_location_cubit.dart';
 import 'package:insurflow/features/claims/presentation/bloc/claims_bloc.dart';
 
+import 'package:insurflow/core/services/device_location_service.dart';
 import 'package:insurflow/core/services/location_tracking_service.dart';
 import 'package:insurflow/core/services/push_notification_service.dart';
 import 'package:insurflow/features/notifications/data/datasources/notifications_remote_data_source.dart';
@@ -62,6 +64,7 @@ class AppDependencies {
     required this.uploadClaimSignatureUseCase,
     required this.getAdjusterStatsUseCase,
     required this.locationTrackingService,
+    required this.deviceLocationService,
     required this.notificationsRepository,
     required this.registerDeviceTokenUseCase,
     required this.pushNotificationService,
@@ -89,6 +92,7 @@ class AppDependencies {
   final UploadClaimSignatureUseCase uploadClaimSignatureUseCase;
   final GetAdjusterStatsUseCase getAdjusterStatsUseCase;
   final LocationTrackingService locationTrackingService;
+  final DeviceLocationService deviceLocationService;
   final NotificationsRepository notificationsRepository;
   final RegisterDeviceTokenUseCase registerDeviceTokenUseCase;
   final PushNotificationService pushNotificationService;
@@ -153,6 +157,7 @@ class AppDependencies {
       uploadClaimSignatureUseCase: UploadClaimSignatureUseCase(claimsRepository),
       getAdjusterStatsUseCase: GetAdjusterStatsUseCase(claimsRepository),
       locationTrackingService: trackingService,
+      deviceLocationService: const GeolocatorLocationService(),
       notificationsRepository: notificationsRepository,
       registerDeviceTokenUseCase: registerDeviceToken,
       pushNotificationService: PushNotificationService(
@@ -188,6 +193,14 @@ class AppDependencies {
 
   AppPreferencesCubit createAppPreferencesCubit() {
     return AppPreferencesCubit(store: appPreferencesStore);
+  }
+
+  AccidentLocationCubit createAccidentLocationCubit(String claimId) {
+    return AccidentLocationCubit(
+      claimId: claimId,
+      locationService: deviceLocationService,
+      updateClaimLocationUseCase: updateClaimLocationUseCase,
+    );
   }
 
   NotificationCenterCubit createNotificationCenterCubit() {

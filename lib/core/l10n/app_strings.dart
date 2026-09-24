@@ -321,6 +321,31 @@ class AppStrings {
   String get calculatingEllipsis =>
       isArabic ? 'جاري الحساب...' : 'Calculating...';
   String get accidentLocation => isArabic ? 'موقع الحادث' : 'Accident Location';
+  String get locatingYou =>
+      isArabic ? 'جارٍ تحديد موقعك…' : 'Getting your location…';
+  String get locationPermissionNeeded => isArabic
+      ? 'نحتاج إذن الموقع لتوثيق مكان المعاينة.'
+      : 'Location permission is needed to record where you inspected.';
+  String get locationServicesOff => isArabic
+      ? 'خدمة الموقع معطّلة على الجهاز.'
+      : 'Location services are turned off on this device.';
+  String get locationTimedOut => isArabic
+      ? 'تعذّر الحصول على إشارة دقيقة. حاول مرة أخرى.'
+      : 'Could not get a fix in time. Try again.';
+  String get openSettings => isArabic ? 'فتح الإعدادات' : 'Open settings';
+  String get tryAgain => isArabic ? 'إعادة المحاولة' : 'Try again';
+  String get addressUnavailable => isArabic
+      ? 'تعذّر تحويل الإحداثيات إلى عنوان.'
+      : 'No address could be resolved for these coordinates.';
+  String get locationSaved => isArabic
+      ? 'تم حفظ الموقع مع المطالبة.'
+      : 'Location saved to the claim.';
+  String get locationSaveFailed => isArabic
+      ? 'تعذّر حفظ الموقع. حاول مرة أخرى.'
+      : 'Could not save the location. Please try again.';
+  String locationAccuracyMetres(int metres) => isArabic
+      ? 'دقة تقريبية ±$metres م'
+      : 'Accurate to about ±${metres}m';
   String get coordinates => isArabic ? 'الإحداثيات' : 'Coordinates';
   String get captured => isArabic ? 'وقت التوثيق' : 'Captured';
   String get locationAccurate => isArabic ? 'دقيق' : 'Accurate';

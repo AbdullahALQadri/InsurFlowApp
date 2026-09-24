@@ -14,12 +14,17 @@ class ClaimReviewSectionCard extends StatelessWidget {
     required this.checks,
     required this.onEdit,
     this.editKey,
+    this.media,
   });
 
   final String title;
   final List<String> checks;
   final VoidCallback onEdit;
   final Key? editKey;
+
+  /// Optional preview shown under the checks — evidence thumbnails or
+  /// the captured signature.
+  final Widget? media;
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +86,10 @@ class ClaimReviewSectionCard extends StatelessWidget {
             for (var i = 0; i < checks.length; i++) ...[
               _CheckRow(label: checks[i], success: success),
               if (i < checks.length - 1) context.addVerticalSpace(8),
+            ],
+            if (media != null) ...[
+              context.addVerticalSpace(12),
+              media!,
             ],
           ],
         ),

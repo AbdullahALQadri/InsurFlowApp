@@ -45,6 +45,8 @@ class ClaimReviewSummary {
     this.locationAddress,
     this.locationCoordinates,
     this.evidenceCount = 0,
+    this.evidenceThumbnails = const [],
+    this.signatureUrl,
     this.signatureCaptured = false,
     this.vehicleLinked = false,
   });
@@ -73,6 +75,14 @@ class ClaimReviewSummary {
   final String? locationCoordinates;
 
   final int evidenceCount;
+
+  /// Cloudinary URLs of the uploaded evidence, straight from
+  /// `evidence[].url`. Empty when nothing has been uploaded.
+  final List<String> evidenceThumbnails;
+
+  /// `signature.url`, or null when no signature is stored.
+  final String? signatureUrl;
+
   final bool signatureCaptured;
 
   /// True once the vehicle has been resolved against the registry,
@@ -132,6 +142,11 @@ class ClaimReviewSummary {
       locationAddress: location?.address,
       locationCoordinates: location?.coordinatesLabel,
       evidenceCount: claim.evidencePhotos.length,
+      evidenceThumbnails: claim.evidencePhotos
+          .map((item) => item.url)
+          .whereType<String>()
+          .toList(),
+      signatureUrl: claim.signature?.url,
       signatureCaptured: claim.signature?.hasImage ?? false,
       // The backend treats the vehicle step as done once a policy is
       // linked and the vehicle is resolved, which is exactly what

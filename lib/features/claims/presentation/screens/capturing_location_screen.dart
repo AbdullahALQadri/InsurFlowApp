@@ -7,7 +7,6 @@ import 'package:insurflow/core/global/design_system/font_weight/font_weight_help
 import 'package:insurflow/core/global/design_system/theme_data/theme_extension.dart';
 import 'package:insurflow/core/l10n/app_strings.dart';
 import 'package:insurflow/core/routing/routes.dart';
-import 'package:insurflow/features/claims/domain/accident_location.dart';
 import 'package:insurflow/features/claims/presentation/screens/accident_location_screen.dart';
 import 'package:insurflow/features/claims/presentation/widgets/location_capture_status.dart';
 import 'package:insurflow/features/claims/presentation/widgets/location_capturing_animation.dart';
@@ -84,13 +83,11 @@ class _CapturingLocationScreenState extends State<CapturingLocationScreen>
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      // TODO(gps): No device location plugin is installed yet, so no
-      // fix was acquired. Hand a pending (empty) location to the screen
-      // instead of fabricating coordinates, and wire the real GPS fix to
-      // PUT /claims/{id}/location when the plugin is added.
+      // The location screen acquires the real fix itself and shows
+      // its own loading state, so this hands over the claim id only.
       AccidentLocationScreen.open(
         context,
-        location: AccidentLocation.pending(claimId: widget.args.claimId),
+        claimId: widget.args.claimId,
         replace: true,
       );
     });

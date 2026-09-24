@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:insurflow/core/routing/routes.dart';
 import 'package:insurflow/features/authentication/presentation/screens/login_screen.dart';
-import 'package:insurflow/features/claims/domain/accident_location.dart';
 import 'package:insurflow/features/claims/domain/claim_documents.dart';
 import 'package:insurflow/features/claims/domain/vehicle_evidence.dart';
 import 'package:insurflow/features/claims/domain/vehicle_lookup_result.dart';
@@ -137,11 +136,10 @@ class AppRouter {
         );
       case Routes.accidentLocationScreen:
         final args = settings.arguments;
-        final location = args is AccidentLocation
-            ? args
-            : AccidentLocation.pending(claimId: args is String ? args : '');
         return MaterialPageRoute(
-          builder: (_) => AccidentLocationScreen(location: location),
+          builder: (_) => AccidentLocationScreen(
+            claimId: args is String ? args : '',
+          ),
         );
       case Routes.vehicleEvidenceScreen:
         final args = settings.arguments;

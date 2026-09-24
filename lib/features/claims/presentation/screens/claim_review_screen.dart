@@ -24,6 +24,7 @@ import 'package:insurflow/features/claims/presentation/utils/claim_date_formatte
 import 'package:insurflow/features/claims/presentation/widgets/claim_ready_banner.dart';
 import 'package:insurflow/features/claims/presentation/widgets/claim_review_section_card.dart';
 import 'package:insurflow/features/claims/presentation/widgets/inspection_step_track.dart';
+import 'package:insurflow/features/claims/presentation/widgets/claim_evidence_gallery.dart';
 
 class ClaimReviewArgs {
   const ClaimReviewArgs({required this.claimId, this.summary});
@@ -239,6 +240,7 @@ class _ReviewScaffold extends StatelessWidget {
                             title: _title(strings, section),
                             checks: _checks(strings, summary, section),
                             editKey: Key('review-edit-${section.name}'),
+                            media: _media(context, summary, section),
                             onEdit: () => _edit(context, summary, section),
                           ),
                           context.addVerticalSpace(12),
@@ -359,6 +361,62 @@ class _ReviewScaffold extends StatelessWidget {
             strings.noSignatureCapturedYet,
         ];
     }
+  }
+
+  /// Previews of what was actually uploaded, drawn from the URLs the
+  /// backend returned. Sections with nothing stored render no media at
+  /// all rather than an empty frame.
+  Widget? _media(
+    BuildContext context,
+    ClaimReviewSummary summary,
+    ClaimReviewSectionId section,
+  ) {
+    final strings = AppStrings.of(context);
+
+    if (section == ClaimReviewSectionId.evidence) {
+      if (summary.evidenceThumbnails.isEmpty) return null;
+      return SizedBox(
+        key: const Key('review-evidence-thumbnails'),
+        height: context.height(68),
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: summary.evidenceThumbnails.length,
+          separatorBuilder: (_, _) => context.addHorizontalSpace(8),
+          itemBuilder: (context, index) => ClipRRect(
+            borderRadius: context.circularRadius(context.radii.sm),
+            child: SizedBox(
+              width: context.width(84),
+              child: ClaimRemoteImage(
+                url: summary.evidenceThumbnails[index],
+                unavailableLabel: strings.evidenceImageUnavailable,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (section == ClaimReviewSectionId.signature) {
+      final url = summary.signatureUrl;
+      if (url == null || url.isEmpty) return null;
+      return Container(
+        key: const Key('review-signature-preview'),
+        height: context.height(80),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: context.colors.backgroundColor,
+          borderRadius: context.circularRadius(context.radii.sm),
+          border: Border.all(color: context.colors.borderColor),
+        ),
+        child: ClaimRemoteImage(
+          url: url,
+          unavailableLabel: strings.evidenceImageUnavailable,
+          fit: BoxFit.contain,
+        ),
+      );
+    }
+
+    return null;
   }
 
   /// `accidentDate` arrives as `YYYY-MM-DD`; anything unparseable is
