@@ -12,6 +12,14 @@
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<!-- Lets iOS wake the app for FCM background/data messages.
+	     Push also requires the Push Notifications capability (an
+	     aps-environment entitlement) and an APNs key uploaded to the
+	     Firebase console; both are Xcode/console steps. -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>

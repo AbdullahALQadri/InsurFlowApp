@@ -402,6 +402,34 @@ class AppStrings {
   // --- Claim location map ------------------------------------------------
 
   String get claimLocation => isArabic ? 'موقع المطالبة' : 'Claim Location';
+
+  // --- Notifications -----------------------------------------------------
+
+  String get notifications => isArabic ? 'الإشعارات' : 'Notifications';
+  String get notificationsEmptyTitle =>
+      isArabic ? 'لا توجد إشعارات' : 'No notifications';
+  String get notificationsEmptyBody => isArabic
+      ? 'ستظهر هنا الإشعارات التي تصل إلى هذا الجهاز.'
+      : 'Notifications delivered to this device will appear here.';
+  String get notificationsSessionNote => isArabic
+      ? 'تعرض هذه القائمة الإشعارات المستلمة منذ فتح التطبيق فقط.'
+      : 'This list shows notifications received since the app was opened.';
+  String get markAllRead => isArabic ? 'تعليم الكل كمقروء' : 'Mark all read';
+  String get viewClaimFromNotification =>
+      isArabic ? 'عرض المطالبة' : 'View claim';
+  String get notificationNoClaimLinked => isArabic
+      ? 'لا يتضمن هذا الإشعار مطالبة مرتبطة.'
+      : 'This notification has no linked claim.';
+  String get notificationsDisabledTitle =>
+      isArabic ? 'الإشعارات معطّلة' : 'Notifications are off';
+  String get notificationsDisabledBody => isArabic
+      ? 'فعّل الإشعارات من إعدادات النظام لتصلك تنبيهات الإسناد.'
+      : 'Enable notifications in system settings to get assignment alerts.';
+  String get enableNotifications => isArabic ? 'تفعيل' : 'Enable';
+
+  String notificationUnreadCount(int count) => isArabic
+      ? (count == 1 ? 'إشعار غير مقروء' : '$count إشعارات غير مقروءة')
+      : (count == 1 ? '1 unread' : '$count unread');
   String get claimLocationSection =>
       isArabic ? 'موقع المطالبة' : 'CLAIM LOCATION';
   String get locationUnavailable =>

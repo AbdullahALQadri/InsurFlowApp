@@ -22,6 +22,12 @@ import 'package:insurflow/features/claims/presentation/bloc/claim_details_bloc.d
 import 'package:insurflow/features/claims/presentation/bloc/claims_bloc.dart';
 
 import 'package:insurflow/core/services/location_tracking_service.dart';
+import 'package:insurflow/core/services/push_notification_service.dart';
+import 'package:insurflow/features/notifications/data/datasources/notifications_remote_data_source.dart';
+import 'package:insurflow/features/notifications/data/repositories/notifications_repository_impl.dart';
+import 'package:insurflow/features/notifications/domain/repositories/notifications_repository.dart';
+import 'package:insurflow/features/notifications/domain/usecases/register_device_token.dart';
+import 'package:insurflow/features/notifications/presentation/cubit/notification_center_cubit.dart';
 import 'package:insurflow/features/claims/domain/usecases/get_adjuster_stats.dart';
 import 'package:insurflow/features/claims/domain/usecases/update_claim_accident.dart';
 import 'package:insurflow/features/claims/domain/usecases/update_claim_location.dart';
@@ -51,6 +57,9 @@ class AppDependencies {
     required this.uploadClaimSignatureUseCase,
     required this.getAdjusterStatsUseCase,
     required this.locationTrackingService,
+    required this.notificationsRepository,
+    required this.registerDeviceTokenUseCase,
+    required this.pushNotificationService,
   });
 
   final TokenStore tokenStore;
@@ -72,6 +81,9 @@ class AppDependencies {
   final UploadClaimSignatureUseCase uploadClaimSignatureUseCase;
   final GetAdjusterStatsUseCase getAdjusterStatsUseCase;
   final LocationTrackingService locationTrackingService;
+  final NotificationsRepository notificationsRepository;
+  final RegisterDeviceTokenUseCase registerDeviceTokenUseCase;
+  final PushNotificationService pushNotificationService;
 
   static AppDependencies? _instance;
 
@@ -97,6 +109,12 @@ class AppDependencies {
     final trackingService = LocationTrackingService(
       updateClaimLocationUseCase: updateClaimLocation,
     );
+    final notificationsRepository = NotificationsRepositoryImpl(
+      NotificationsRemoteDataSourceImpl(dio),
+    );
+    final registerDeviceToken = RegisterDeviceTokenUseCase(
+      notificationsRepository,
+    );
 
     _instance = AppDependencies._(
       tokenStore: store,
@@ -118,6 +136,11 @@ class AppDependencies {
       uploadClaimSignatureUseCase: UploadClaimSignatureUseCase(claimsRepository),
       getAdjusterStatsUseCase: GetAdjusterStatsUseCase(claimsRepository),
       locationTrackingService: trackingService,
+      notificationsRepository: notificationsRepository,
+      registerDeviceTokenUseCase: registerDeviceToken,
+      pushNotificationService: PushNotificationService(
+        registerDeviceTokenUseCase: registerDeviceToken,
+      ),
     );
     return _instance!;
   }
@@ -141,6 +164,10 @@ class AppDependencies {
       getClaimDetailsUseCase: getClaimDetailsUseCase,
       startClaimUseCase: startClaimUseCase,
     );
+  }
+
+  NotificationCenterCubit createNotificationCenterCubit() {
+    return NotificationCenterCubit(service: pushNotificationService);
   }
 
   HomeCubit createHomeCubit() {

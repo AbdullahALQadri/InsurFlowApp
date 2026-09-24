@@ -28,6 +28,7 @@ import 'package:insurflow/features/claims/presentation/screens/vehicle_identific
 import 'package:insurflow/features/claims/presentation/screens/vehicle_information_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/vehicle_lookup_screen.dart';
 import 'package:insurflow/features/home/presentation/screens/main_screen.dart';
+import 'package:insurflow/features/notifications/presentation/screens/notification_center_screen.dart';
 import 'package:insurflow/features/splash/presentation/screens/splash_screen.dart';
 
 class AppRouter {
@@ -205,6 +206,11 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => ClaimValidationScreen(args: validation),
         );
+      case Routes.notificationCenterScreen:
+        return MaterialPageRoute(
+          builder: (_) => const NotificationCenterScreen(),
+        );
+
       case Routes.claimLocationMapScreen:
         final args = settings.arguments;
         // The screen needs an already-validated point; without one

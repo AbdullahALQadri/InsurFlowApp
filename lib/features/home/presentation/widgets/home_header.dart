@@ -7,6 +7,7 @@ import 'package:insurflow/core/global/design_system/font_weight/font_weight_help
 import 'package:insurflow/core/global/design_system/theme_data/theme_extension.dart';
 import 'package:insurflow/core/global/design_system/widgets/location_status_bar.dart';
 import 'package:insurflow/core/services/location_tracking_service.dart';
+import 'package:insurflow/features/notifications/presentation/widgets/notification_bell.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({
@@ -57,7 +58,9 @@ class HomeHeader extends StatelessWidget {
             ],
           ),
         ),
-        context.addHorizontalSpace(12),
+        context.addHorizontalSpace(8),
+        const NotificationBell(),
+        context.addHorizontalSpace(8),
         _ProfileAvatar(
           initial: adjusterName.trim().isEmpty
               ? '?'
