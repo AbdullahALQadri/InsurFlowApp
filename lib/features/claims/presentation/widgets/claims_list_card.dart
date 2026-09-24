@@ -81,20 +81,35 @@ class ClaimsListCard extends StatelessWidget {
                           ],
                         ),
                         context.addVerticalSpace(8),
-                        Text(
-                          '${claim.vehicle}  ·  ${claim.vehicleYear}',
-                          style: context.font16Regular?.copyWith(
-                            color: colors.textPrimaryColor,
+                        // The list endpoint returns `customerName` and
+                        // `initialPlateNumber`; make/model/year arrive
+                        // only with the claim detail call.
+                        if (claim.customerName != null)
+                          Text(
+                            claim.customerName!,
+                            style: context.font16Regular?.copyWith(
+                              color: colors.textPrimaryColor,
+                            ),
                           ),
-                        ),
-                        context.addVerticalSpace(4),
-                        Text(
-                          claim.licensePlate,
-                          style: context.font14Regular?.copyWith(
-                            color: colors.textSecondaryColor,
-                            letterSpacing: 0.5,
+                        if (claim.hasVehicleSpecification) ...[
+                          context.addVerticalSpace(4),
+                          Text(
+                            claim.vehicle,
+                            style: context.font14Regular?.copyWith(
+                              color: colors.textPrimaryColor,
+                            ),
                           ),
-                        ),
+                        ],
+                        if (claim.licensePlate.isNotEmpty) ...[
+                          context.addVerticalSpace(4),
+                          Text(
+                            claim.licensePlate,
+                            style: context.font14Regular?.copyWith(
+                              color: colors.textSecondaryColor,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
                         context.addVerticalSpace(10),
                         Row(
                           children: [

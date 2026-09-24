@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:insurflow/core/di/app_dependencies.dart';
 import 'package:insurflow/core/extensions/app_sizes.dart';
 import 'package:insurflow/core/extensions/navigation.dart';
 import 'package:insurflow/core/extensions/text_style_extension.dart';
@@ -17,7 +18,15 @@ import 'package:insurflow/features/claims/presentation/widgets/policy_active_bad
 import 'package:insurflow/features/claims/presentation/widgets/stylized_license_plate.dart';
 import 'package:insurflow/features/claims/presentation/widgets/verified_lookup_card.dart';
 
-class VehicleInformationScreen extends StatelessWidget {
+/// Confirmation step for the vehicle, customer and policy returned by
+/// `GET /vehicles/lookup`.
+///
+/// Confirming links all three to the claim through a single
+/// `PUT /claims/{id}/vehicle`, which requires `vehicleId`, `policyId`,
+/// `customerId` and `plateNumber`. When the lookup did not return those
+/// ids there is nothing to link, so the button reports the failure
+/// instead of advancing as if the claim had been updated.
+class VehicleInformationScreen extends StatefulWidget {
   const VehicleInformationScreen({
     super.key,
     required this.result,
@@ -28,6 +37,10 @@ class VehicleInformationScreen extends StatelessWidget {
   final VehicleLookupResult result;
   final ValueChanged<VehicleLookupResult>? onConfirm;
   final VoidCallback? onEdit;
+
+  @override
+  State<VehicleInformationScreen> createState() =>
+      _VehicleInformationScreenState();
 
   static Future<dynamic> open(
     BuildContext context, {
@@ -45,6 +58,12 @@ class VehicleInformationScreen extends StatelessWidget {
       arguments: result,
     );
   }
+}
+
+class _VehicleInformationScreenState extends State<VehicleInformationScreen> {
+  var _isLinking = false;
+
+  VehicleLookupResult get result => widget.result;
 
   @override
   Widget build(BuildContext context) {
@@ -96,27 +115,16 @@ class VehicleInformationScreen extends StatelessWidget {
                   ),
                 ),
                 AppPrimaryButton(
+                  key: const Key('confirm-vehicle-information'),
                   label: strings.confirmInformation,
                   prominent: true,
-                  onPressed: () {
-                    if (onConfirm != null) {
-                      onConfirm!(result);
-                      return;
-                    }
-                    InspectionProgress.complete(
-                      result.claimId,
-                      InspectionStepId.vehicle,
-                    );
-                    AccidentDetailsScreen.open(
-                      context,
-                      claimId: result.claimId,
-                    );
-                  },
+                  isLoading: _isLinking,
+                  onPressed: _isLinking ? null : _confirm,
                 ),
                 context.addVerticalSpace(10),
                 AppOutlinedButton(
                   label: strings.edit,
-                  onPressed: onEdit ?? () => context.pop(),
+                  onPressed: widget.onEdit ?? () => context.pop(),
                 ),
                 context.addVerticalSpace(8),
               ],
@@ -124,6 +132,46 @@ class VehicleInformationScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _confirm() async {
+    if (widget.onConfirm != null) {
+      widget.onConfirm!(result);
+      return;
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+    final strings = AppStrings.of(context);
+
+    // The lookup found no vehicle/policy/customer for this plate, so
+    // there is nothing to link. Say so rather than moving on.
+    if (!result.canLinkToClaim) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(strings.vehicleLinkUnavailable)),
+      );
+      return;
+    }
+
+    setState(() => _isLinking = true);
+    final outcome = await AppDependencies.instance.updateClaimVehicleUseCase(
+      claimId: result.claimId,
+      vehicleId: result.vehicleId!,
+      policyId: result.policyId!,
+      customerId: result.customerId!,
+      plateNumber: result.licensePlate,
+    );
+    if (!mounted) return;
+    setState(() => _isLinking = false);
+
+    outcome.fold(
+      (failure) => messenger.showSnackBar(
+        SnackBar(content: Text(strings.messageFor(failure))),
+      ),
+      (_) {
+        InspectionProgress.complete(result.claimId, InspectionStepId.vehicle);
+        AccidentDetailsScreen.open(context, claimId: result.claimId);
+      },
     );
   }
 }
@@ -146,9 +194,7 @@ class _VehicleCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            result.hasVehicle
-                ? result.makeModel
-                : AppStrings.of(context).notAvailable,
+            result.makeModel ?? strings.notAvailable,
             style: context.font22Bold?.copyWith(
               color: colors.textPrimaryColor,
               fontWeight: FontWeightHelper.bold,
@@ -158,13 +204,12 @@ class _VehicleCard extends StatelessWidget {
           context.addVerticalSpace(10),
           Row(
             children: [
-              if (result.year > 0) ...[
+              if (result.year != null) ...[
                 _MetaChip(label: '${result.year}'),
-                if (result.colorKey.trim().isNotEmpty)
-                  context.addHorizontalSpace(8),
+                if (result.color != null) context.addHorizontalSpace(8),
               ],
-              if (result.colorKey.trim().isNotEmpty)
-                _MetaChip(label: strings.vehicleColorLabel(result.colorKey)),
+              if (result.color != null)
+                _MetaChip(label: strings.vehicleColorLabel(result.color!)),
             ],
           ),
           context.addVerticalSpace(18),
@@ -213,9 +258,7 @@ class _CustomerCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            result.hasCustomer
-                ? result.customerName
-                : AppStrings.of(context).notAvailable,
+            result.customerName ?? strings.notAvailable,
             style: context.font18Bold?.copyWith(
               color: colors.textPrimaryColor,
               fontWeight: FontWeightHelper.bold,
@@ -232,9 +275,7 @@ class _CustomerCard extends StatelessWidget {
               ),
               context.addHorizontalSpace(8),
               Text(
-                result.customerPhone.trim().isEmpty
-                    ? AppStrings.of(context).notAvailable
-                    : result.customerPhone,
+                result.customerPhone ?? strings.notAvailable,
                 style: context.font16Regular?.copyWith(
                   color: colors.textSecondaryColor,
                   height: 1.3,
@@ -262,18 +303,16 @@ class _PolicyCard extends StatelessWidget {
       label: strings.policySection,
       icon: Icons.verified_user_outlined,
       watermark: Icons.shield_outlined,
-      trailing: result.policyStatus == PolicyStatus.active
+      trailing: result.isPolicyActive
           ? PolicyActiveBadge(
-              label: strings.policyStatusLabel(result.policyStatus),
+              label: strings.policyStatusLabel(result.policyStatus)!,
             )
           : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            result.hasPolicy
-                ? result.policyNumber
-                : AppStrings.of(context).notAvailable,
+            result.policyNumber ?? strings.notAvailable,
             style: context.font22Bold?.copyWith(
               color: colors.textPrimaryColor,
               fontWeight: FontWeightHelper.bold,
@@ -281,13 +320,12 @@ class _PolicyCard extends StatelessWidget {
               height: 1.2,
             ),
           ),
-          if (result.policyStart.millisecondsSinceEpoch > 0 &&
-              result.policyEnd.millisecondsSinceEpoch > 0) ...[
+          if (result.policyStart != null && result.policyEnd != null) ...[
             context.addVerticalSpace(12),
             Text(
               ClaimDateFormatter.dateRange(
-                result.policyStart,
-                result.policyEnd,
+                result.policyStart!,
+                result.policyEnd!,
               ),
               style: context.font16Regular?.copyWith(
                 color: colors.textSecondaryColor,

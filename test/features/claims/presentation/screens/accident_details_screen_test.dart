@@ -52,10 +52,11 @@ void main() {
     expect(find.byType(AccidentHeaderIllustration), findsOneWidget);
     expect(find.byType(AccidentTypeGrid), findsOneWidget);
     expect(find.text('Accident Type'), findsOneWidget);
+    // The five values PUT /claims/{id}/accident accepts.
+    expect(find.text('Collision'), findsOneWidget);
     expect(find.text('Rear-end Collision'), findsOneWidget);
-    expect(find.text('Front Collision'), findsOneWidget);
-    expect(find.text('Side Collision'), findsOneWidget);
-    expect(find.text('Multiple Vehicle Collision'), findsOneWidget);
+    expect(find.text('Side Impact'), findsOneWidget);
+    expect(find.text('Parking Damage'), findsOneWidget);
     expect(find.text('Other'), findsOneWidget);
     expect(find.text('Date', skipOffstage: false), findsOneWidget);
     expect(find.text('Time', skipOffstage: false), findsOneWidget);
@@ -88,7 +89,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byKey(const Key('accident-type-rearEnd')));
+    await tester.tap(find.byKey(const Key('accident-type-rearEndCollision')));
     await tester.pump();
     await tester.drag(find.byType(ListView), const Offset(0, -500));
     await tester.pump();
@@ -139,7 +140,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byKey(const Key('accident-type-rearEnd')));
+    await tester.tap(find.byKey(const Key('accident-type-rearEndCollision')));
     await tester.pump();
     await tester.drag(find.byType(ListView), const Offset(0, -500));
     await tester.pump();
@@ -160,7 +161,7 @@ void main() {
     await tester.tap(find.text('Continue'));
     await tester.pump();
 
-    expect(submitted?.type, AccidentType.rearEnd);
+    expect(submitted?.type, AccidentType.rearEndCollision);
     expect(submitted?.description, contains('struck from behind'));
     expect(submitted?.damageDescription, contains('Rear bumper'));
   });

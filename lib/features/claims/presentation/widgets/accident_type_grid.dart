@@ -185,14 +185,14 @@ class _TypeTile extends StatelessWidget {
 
   IconData _iconFor(AccidentType type) {
     switch (type) {
-      case AccidentType.rearEnd:
-        return Icons.car_crash_outlined;
-      case AccidentType.front:
+      case AccidentType.collision:
         return Icons.directions_car_outlined;
-      case AccidentType.side:
+      case AccidentType.rearEndCollision:
+        return Icons.car_crash_outlined;
+      case AccidentType.sideImpact:
         return Icons.sync_alt_rounded;
-      case AccidentType.multipleVehicle:
-        return Icons.airport_shuttle_outlined;
+      case AccidentType.parkingDamage:
+        return Icons.local_parking_outlined;
       case AccidentType.other:
         return Icons.more_horiz_rounded;
     }

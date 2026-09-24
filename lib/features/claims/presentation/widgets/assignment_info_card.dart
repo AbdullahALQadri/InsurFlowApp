@@ -77,3 +77,76 @@ class AssignmentInfoLines extends StatelessWidget {
     );
   }
 }
+
+/// A `label / value` pair inside an [AssignmentInfoCard].
+///
+/// Renders only when the backend actually sent [value]; a null or blank
+/// value means the field was never captured, and the caller decides
+/// whether to omit the row or show the section's own empty note.
+class AssignmentInfoRow extends StatelessWidget {
+  const AssignmentInfoRow({
+    super.key,
+    required this.label,
+    required this.value,
+    this.valueWidget,
+  });
+
+  final String label;
+  final String? value;
+  final Widget? valueWidget;
+
+  bool get hasValue =>
+      valueWidget != null || (value?.trim().isNotEmpty ?? false);
+
+  @override
+  Widget build(BuildContext context) {
+    if (!hasValue) return const SizedBox.shrink();
+    final colors = context.colors;
+
+    return Padding(
+      padding: context.spaceBottom(10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: context.font14Regular?.copyWith(
+              color: colors.textSecondaryColor,
+              fontSize: context.width(12),
+            ),
+          ),
+          context.addVerticalSpace(2),
+          valueWidget ??
+              Text(
+                value!.trim(),
+                style: context.font16Bold?.copyWith(
+                  color: colors.textPrimaryColor,
+                  fontWeight: FontWeightHelper.semiBold,
+                  height: 1.35,
+                ),
+              ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Shown inside a section whose backend data is still null, so the
+/// screen states the fact instead of rendering a fabricated value.
+class AssignmentEmptyNote extends StatelessWidget {
+  const AssignmentEmptyNote({super.key, required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Text(
+      message,
+      style: context.font14Regular?.copyWith(
+        color: colors.textSecondaryColor,
+        height: 1.4,
+      ),
+    );
+  }
+}

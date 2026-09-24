@@ -4,33 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:insurflow/core/global/design_system/theme_data/app_theme.dart';
 import 'package:insurflow/core/global/design_system/widgets/app_primary_button.dart';
 import 'package:insurflow/core/l10n/app_strings.dart';
-import 'package:insurflow/features/claims/domain/accident_details.dart';
-import 'package:insurflow/features/claims/domain/claim_review_summary.dart';
-import 'package:insurflow/features/claims/domain/vehicle_lookup_result.dart';
 import 'package:insurflow/features/claims/presentation/screens/claim_validation_screen.dart';
 import 'package:insurflow/features/claims/presentation/widgets/claim_validation_animation.dart';
 import 'package:insurflow/features/claims/presentation/widgets/claim_validation_checks.dart';
 
 void main() {
-  ClaimReviewSummary readySummary() {
-    return const ClaimReviewSummary(
-      claimId: 'CLM-0001',
-      claimNumber: 'CLM-0001',
-      licensePlate: 'ABC-1234',
-      makeModel: 'Toyota Corolla',
-      customerName: 'Ahmed Ali',
-      policyNumber: 'POL-102938',
-      policyStatus: PolicyStatus.active,
-      accidentType: AccidentType.rearEnd,
-      locationCaptured: true,
-      evidenceCompleted: 7,
-      evidenceTotal: 7,
-      documentsCompleted: 3,
-      documentsTotal: 3,
-      signatureCompleted: true,
-    );
-  }
-
   Widget wrap(Widget child) {
     return MaterialApp(
       theme: AppTheme.lightTheme,
@@ -61,7 +39,7 @@ void main() {
   ) async {
     await pumpScreen(
       tester,
-      ClaimValidationScreen(args: ClaimValidationArgs(summary: readySummary())),
+      ClaimValidationScreen(args: ClaimValidationArgs(claimId: 'CLM-0001', claimNumber: 'CLM-0001')),
     );
 
     expect(find.text('Checking your claim'), findsOneWidget);
@@ -88,7 +66,7 @@ void main() {
     await pumpScreen(
       tester,
       ClaimValidationScreen(
-        args: ClaimValidationArgs(summary: readySummary()),
+        args: ClaimValidationArgs(claimId: 'CLM-0001', claimNumber: 'CLM-0001'),
         validationDuration: Duration.zero,
       ),
     );
@@ -110,21 +88,20 @@ void main() {
   });
 
   testWidgets('Continue to Submit notifies the host', (tester) async {
-    ClaimReviewSummary? submitted;
+    String? submittedClaimId;
 
     await pumpScreen(
       tester,
       ClaimValidationScreen(
-        args: ClaimValidationArgs(summary: readySummary()),
+        args: ClaimValidationArgs(claimId: 'CLM-0001', claimNumber: 'CLM-0001'),
         validationDuration: Duration.zero,
-        onContinue: (summary) => submitted = summary,
+        onContinue: (claimId) => submittedClaimId = claimId,
       ),
     );
 
     await tester.tap(find.text('Continue to Submit'));
     await tester.pump();
-    expect(submitted?.claimNumber, 'CLM-0001');
-    expect(submitted?.isReady, isTrue);
+    expect(submittedClaimId, 'CLM-0001');
   });
 
   testWidgets('Continue to Submit opens the confirmation sheet', (
@@ -133,7 +110,7 @@ void main() {
     await pumpScreen(
       tester,
       ClaimValidationScreen(
-        args: ClaimValidationArgs(summary: readySummary()),
+        args: ClaimValidationArgs(claimId: 'CLM-0001', claimNumber: 'CLM-0001'),
         validationDuration: Duration.zero,
       ),
     );

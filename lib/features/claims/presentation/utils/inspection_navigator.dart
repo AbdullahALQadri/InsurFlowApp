@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-import 'package:insurflow/features/claims/domain/claim_review_summary.dart';
 import 'package:insurflow/features/claims/domain/inspection_progress.dart';
 import 'package:insurflow/features/claims/domain/inspection_progress_store.dart';
 import 'package:insurflow/features/claims/presentation/screens/accident_details_screen.dart';
@@ -53,10 +52,7 @@ class InspectionNavigator {
       case InspectionStepId.review:
         return ClaimReviewScreen.open(context, claimId: claimId);
       case InspectionStepId.submission:
-        return ClaimValidationScreen.open(
-          context,
-          summary: ClaimReviewSummary.pending(claimId: claimId),
-        );
+        return ClaimValidationScreen.open(context, claimId: claimId);
     }
   }
 
@@ -68,10 +64,7 @@ class InspectionNavigator {
     InspectionProgress.complete(claimId, completed);
     final nextIndex = completed.index + 1;
     if (nextIndex >= InspectionStepId.values.length) {
-      return ClaimValidationScreen.open(
-        context,
-        summary: ClaimReviewSummary.pending(claimId: claimId),
-      );
+      return ClaimValidationScreen.open(context, claimId: claimId);
     }
     return openStep(
       context,

@@ -5,7 +5,7 @@ void main() {
   final now = DateTime(2026, 8, 31, 10, 30);
 
   AccidentDetailsDraft draft({
-    AccidentType? type = AccidentType.rearEnd,
+    AccidentType? type = AccidentType.rearEndCollision,
     DateTime? occurredOn,
     int? hour = 9,
     int? minute = 15,

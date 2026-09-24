@@ -1,42 +1,60 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:insurflow/features/claims/domain/accident_details.dart';
 import 'package:insurflow/features/claims/domain/claim_review_summary.dart';
-import 'package:insurflow/features/claims/domain/vehicle_lookup_result.dart';
 
 void main() {
-  test('pending review reports unknown backend fields honestly', () {
-    final summary = ClaimReviewSummary.pending(claimId: 'CLM-0001');
-
-    expect(summary.claimNumber, 'CLM-0001');
-    expect(summary.licensePlate, isEmpty);
-    expect(summary.makeModel, isEmpty);
-    expect(summary.customerName, isEmpty);
-    expect(summary.policyNumber, isEmpty);
-    expect(summary.policyStatus, PolicyStatus.unknown);
-    expect(summary.accidentType, isNull);
-    expect(summary.isReady, isFalse);
-  });
-
-  test('explicit snapshot is complete for submission', () {
+  test('a snapshot with every backend section is ready to submit', () {
     const summary = ClaimReviewSummary(
-      claimId: 'CLM-0001',
+      claimId: '6a91ab09c9ff1dc54fabf15b',
       claimNumber: 'CLM-0001',
       licensePlate: 'ABC-1234',
       makeModel: 'Toyota Corolla',
+      vehicleYear: 2022,
       customerName: 'Ahmed Ali',
       policyNumber: 'POL-102938',
-      policyStatus: PolicyStatus.active,
-      accidentType: AccidentType.rearEnd,
-      locationCaptured: true,
-      evidenceCompleted: 7,
-      evidenceTotal: 7,
-      documentsCompleted: 3,
-      documentsTotal: 3,
-      signatureCompleted: true,
+      policyStatus: 'ACTIVE',
+      accidentType: 'REAR_END_COLLISION',
+      accidentDate: '2026-08-28',
+      accidentTime: '14:30',
+      accidentDescription: 'Hit from behind at a red light.',
+      locationAddress: 'King Fahd Road, Riyadh',
+      locationCoordinates: '24.7136, 46.6753',
+      evidenceCount: 1,
+      signatureCaptured: true,
+      vehicleLinked: true,
     );
 
-    expect(summary.evidenceCompleted, 7);
-    expect(summary.documentsCompleted, 3);
     expect(summary.isReady, isTrue);
+    expect(summary.missingSections, isEmpty);
+    expect(summary.isPolicyActive, isTrue);
+    expect(summary.accidentTypeLabel, 'Rear End Collision');
+  });
+
+  test('missing sections match what the submit endpoint rejects on', () {
+    const summary = ClaimReviewSummary(
+      claimId: '6a91ab09c9ff1dc54fabf15b',
+      claimNumber: 'CLM-0001',
+      licensePlate: 'ABC-1234',
+      customerName: 'Ahmed Ali',
+    );
+
+    expect(summary.isReady, isFalse);
+    expect(summary.missingSections, [
+      ClaimReviewSectionId.vehicle,
+      ClaimReviewSectionId.accident,
+      ClaimReviewSectionId.location,
+      ClaimReviewSectionId.evidence,
+      ClaimReviewSectionId.signature,
+    ]);
+  });
+
+  test('an unknown policy status is reported, not guessed', () {
+    const summary = ClaimReviewSummary(
+      claimId: 'c1',
+      claimNumber: 'CLM-0001',
+      policyStatus: 'LAPSED',
+    );
+
+    expect(summary.isPolicyActive, isFalse);
+    expect(summary.policyStatusLabel, 'Lapsed');
   });
 }

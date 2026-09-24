@@ -3,7 +3,6 @@ import 'package:insurflow/core/routing/routes.dart';
 import 'package:insurflow/features/authentication/presentation/screens/login_screen.dart';
 import 'package:insurflow/features/claims/domain/accident_location.dart';
 import 'package:insurflow/features/claims/domain/claim_documents.dart';
-import 'package:insurflow/features/claims/domain/claim_review_summary.dart';
 import 'package:insurflow/features/claims/domain/vehicle_evidence.dart';
 import 'package:insurflow/features/claims/domain/vehicle_lookup_result.dart';
 import 'package:insurflow/features/claims/presentation/screens/accident_details_screen.dart';
@@ -19,6 +18,7 @@ import 'package:insurflow/features/claims/presentation/screens/claim_review_scre
 import 'package:insurflow/features/claims/presentation/screens/claim_validation_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/document_preview_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/claim_details_screen.dart';
+import 'package:insurflow/features/claims/presentation/screens/claim_location_map_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/claims_list_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/new_assignment_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/license_plate_scanner_screen.dart';
@@ -201,13 +201,24 @@ class AppRouter {
         final args = settings.arguments;
         final validation = args is ClaimValidationArgs
             ? args
-            : ClaimValidationArgs(
-                summary: ClaimReviewSummary.pending(
-                  claimId: args is String ? args : '',
-                ),
-              );
+            : ClaimValidationArgs(claimId: args is String ? args : '');
         return MaterialPageRoute(
           builder: (_) => ClaimValidationScreen(args: validation),
+        );
+      case Routes.claimLocationMapScreen:
+        final args = settings.arguments;
+        // The screen needs an already-validated point; without one
+        // there is nothing to map, so fall through to the no-route
+        // page rather than opening an empty map.
+        if (args is ClaimLocationMapArgs) {
+          return MaterialPageRoute(
+            builder: (_) => ClaimLocationMapScreen(args: args),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => Scaffold(
+            body: Center(child: Text('No Route Found ${settings.name}')),
+          ),
         );
 
       default:

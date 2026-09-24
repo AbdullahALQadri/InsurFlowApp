@@ -8,7 +8,6 @@ import 'package:insurflow/core/global/design_system/font_weight/font_weight_help
 import 'package:insurflow/core/global/design_system/theme_data/theme_extension.dart';
 import 'package:insurflow/core/l10n/app_strings.dart';
 import 'package:insurflow/core/routing/routes.dart';
-import 'package:insurflow/features/claims/domain/license_plate_format.dart';
 import 'package:insurflow/features/claims/domain/usecases/lookup_vehicle.dart';
 import 'package:insurflow/features/claims/domain/vehicle_lookup_progress.dart';
 import 'package:insurflow/features/claims/domain/vehicle_lookup_result.dart';
@@ -95,19 +94,13 @@ class _VehicleLookupScreenState extends State<VehicleLookupScreen>
 
   String get _plate => widget.args.plateNumber.trim();
 
+  /// Only the plate is known: either nothing was scanned, or the
+  /// lookup failed. Nothing about the vehicle, customer or policy is
+  /// filled in.
   VehicleLookupResult _plateOnlyResult() {
-    return VehicleLookupResult(
+    return VehicleLookupResult.empty(
       claimId: widget.args.claimId,
-      makeModel: '',
-      year: 0,
-      colorKey: '',
-      licensePlate: _plate,
-      customerName: '',
-      customerPhone: '',
-      policyNumber: '',
-      policyStatus: PolicyStatus.unknown,
-      policyStart: DateTime.fromMillisecondsSinceEpoch(0),
-      policyEnd: DateTime.fromMillisecondsSinceEpoch(0),
+      plateNumber: _plate,
     );
   }
 

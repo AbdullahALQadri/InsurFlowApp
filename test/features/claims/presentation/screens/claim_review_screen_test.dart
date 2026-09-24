@@ -10,6 +10,30 @@ import 'package:insurflow/features/claims/presentation/widgets/claim_ready_banne
 import 'package:insurflow/features/claims/presentation/widgets/claim_review_section_card.dart';
 
 void main() {
+  /// Mirrors a fully captured claim as `GET /claims/{id}` returns it.
+  /// Passing a snapshot keeps the widget test off the network; the
+  /// screen's own loading path is covered by the model tests.
+  ClaimReviewSummary readySummary() {
+    return const ClaimReviewSummary(
+      claimId: '6a91ab09c9ff1dc54fabf15b',
+      claimNumber: 'CLM-0001',
+      licensePlate: 'ABC-1234',
+      makeModel: 'Toyota Corolla',
+      customerName: 'Ahmed Ali',
+      policyNumber: 'POL-102938',
+      policyStatus: 'ACTIVE',
+      accidentType: 'REAR_END_COLLISION',
+      accidentDate: '2026-08-28',
+      accidentTime: '14:30',
+      accidentDescription: 'Hit from behind at a red light.',
+      locationAddress: 'King Fahd Road, Riyadh',
+      locationCoordinates: '24.7136, 46.6753',
+      evidenceCount: 1,
+      signatureCaptured: true,
+      vehicleLinked: true,
+    );
+  }
+
   Widget wrap(Widget child) {
     return MaterialApp(
       theme: AppTheme.lightTheme,
@@ -40,7 +64,12 @@ void main() {
   ) async {
     await pumpScreen(
       tester,
-      const ClaimReviewScreen(args: ClaimReviewArgs(claimId: 'CLM-0001')),
+      ClaimReviewScreen(
+        args: ClaimReviewArgs(
+          claimId: '6a91ab09c9ff1dc54fabf15b',
+          summary: readySummary(),
+        ),
+      ),
     );
 
     expect(find.text('Review Claim'), findsOneWidget);
@@ -53,30 +82,39 @@ void main() {
     expect(find.text('Ahmed Ali', skipOffstage: false), findsOneWidget);
     expect(find.text('POLICY', skipOffstage: false), findsOneWidget);
     expect(find.text('POL-102938', skipOffstage: false), findsOneWidget);
-    expect(find.text('Active', skipOffstage: false), findsOneWidget);
+    expect(find.text('ACTIVE', skipOffstage: false), findsOneWidget);
     expect(find.text('ACCIDENT', skipOffstage: false), findsOneWidget);
     expect(
-      find.text('Rear-end Collision', skipOffstage: false),
+      find.text('Rear End Collision', skipOffstage: false),
       findsOneWidget,
     );
-    expect(find.text('Date', skipOffstage: false), findsOneWidget);
-    expect(find.text('Time', skipOffstage: false), findsOneWidget);
-    expect(find.text('Description', skipOffstage: false), findsOneWidget);
+    // Real accident values, not the field names.
+    expect(find.text('28 Aug 2026', skipOffstage: false), findsOneWidget);
+    expect(find.text('14:30', skipOffstage: false), findsOneWidget);
+    expect(
+      find.text('Hit from behind at a red light.', skipOffstage: false),
+      findsOneWidget,
+    );
     expect(find.text('LOCATION', skipOffstage: false), findsOneWidget);
-    expect(find.text('Captured', skipOffstage: false), findsOneWidget);
+    expect(
+      find.text('King Fahd Road, Riyadh', skipOffstage: false),
+      findsOneWidget,
+    );
+    expect(
+      find.text('24.7136, 46.6753', skipOffstage: false),
+      findsOneWidget,
+    );
     expect(find.text('EVIDENCE', skipOffstage: false), findsOneWidget);
-    expect(find.text('7 / 7 photos', skipOffstage: false), findsOneWidget);
-    expect(find.text('DOCUMENTS', skipOffstage: false), findsOneWidget);
-    expect(find.text('3 / 3 documents', skipOffstage: false), findsOneWidget);
+    expect(find.text('1 photo', skipOffstage: false), findsOneWidget);
     expect(find.text('SIGNATURE', skipOffstage: false), findsOneWidget);
-    expect(find.text('Completed', skipOffstage: false), findsOneWidget);
+    expect(find.text('Captured', skipOffstage: false), findsOneWidget);
     expect(find.text('Claim is ready to submit'), findsOneWidget);
     expect(find.byType(ClaimReadyBanner), findsOneWidget);
     expect(
       find.byType(ClaimReviewSectionCard, skipOffstage: false),
-      findsNWidgets(8),
+      findsNWidgets(7),
     );
-    expect(find.text('Edit', skipOffstage: false), findsNWidgets(8));
+    expect(find.text('Edit', skipOffstage: false), findsNWidgets(7));
 
     final submit = tester.widget<AppPrimaryButton>(
       find.byType(AppPrimaryButton),
@@ -92,7 +130,10 @@ void main() {
     await pumpScreen(
       tester,
       ClaimReviewScreen(
-        args: const ClaimReviewArgs(claimId: 'CLM-0001'),
+        args: ClaimReviewArgs(
+          claimId: '6a91ab09c9ff1dc54fabf15b',
+          summary: readySummary(),
+        ),
         onEdit: (section) => edited = section,
         onSubmit: (summary) => submitted = summary,
       ),
@@ -107,5 +148,6 @@ void main() {
     await tester.pump();
     expect(submitted?.isReady, isTrue);
     expect(submitted?.claimNumber, 'CLM-0001');
+    expect(submitted?.makeModel, 'Toyota Corolla');
   });
 }

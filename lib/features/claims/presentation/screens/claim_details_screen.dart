@@ -11,13 +11,10 @@ import 'package:insurflow/core/global/design_system/widgets/api_state_views.dart
 import 'package:insurflow/core/global/design_system/widgets/app_primary_button.dart';
 import 'package:insurflow/core/l10n/app_strings.dart';
 import 'package:insurflow/core/routing/routes.dart';
-import 'package:insurflow/features/claims/domain/claim_assignment.dart';
 import 'package:insurflow/features/claims/domain/claim_status.dart';
 import 'package:insurflow/features/claims/domain/entities/claim.dart';
 import 'package:insurflow/features/claims/presentation/bloc/claim_details_bloc.dart';
-import 'package:insurflow/features/claims/presentation/utils/claim_date_formatter.dart';
-import 'package:insurflow/features/claims/presentation/widgets/accident_map_preview.dart';
-import 'package:insurflow/features/claims/presentation/widgets/assignment_info_card.dart';
+import 'package:insurflow/features/claims/presentation/widgets/claim_detail_sections.dart';
 import 'package:insurflow/features/claims/presentation/widgets/claim_details_illustration.dart';
 import 'package:insurflow/features/claims/presentation/widgets/claim_progress_view.dart';
 import 'package:insurflow/features/claims/presentation/widgets/claim_status_transition_badge.dart';
@@ -154,7 +151,6 @@ class _DetailsBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final strings = AppStrings.of(context);
-    final data = ClaimAssignment.fromClaim(claim);
 
     return Column(
       children: [
@@ -167,7 +163,7 @@ class _DetailsBody extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      '${strings.claimNumberPrefix}${data.claimId}',
+                      '${strings.claimNumberPrefix}${claim.displayNumber}',
                       style: context.font22Bold?.copyWith(
                         color: colors.textPrimaryColor,
                         fontWeight: FontWeightHelper.bold,
@@ -177,116 +173,14 @@ class _DetailsBody extends StatelessWidget {
                   ),
                   ClaimStatusTransitionBadge(
                     key: const ValueKey('claim-status-transition'),
-                    status: data.status,
+                    status: claim.status,
                   ),
                 ],
               ),
               context.addVerticalSpace(8),
               const ClaimDetailsIllustration(),
               context.addVerticalSpace(8),
-              AssignmentInfoCard(
-                label: strings.customer,
-                child: AssignmentInfoLines(
-                  lines: [
-                    _value(context, data.customerName),
-                    _value(context, data.customerPhone),
-                  ],
-                ),
-              ),
-              context.addVerticalSpace(12),
-              AssignmentInfoCard(
-                label: strings.vehicle,
-                child: AssignmentInfoLines(
-                  lines: [
-                    _value(context, data.vehicle),
-                    _value(context, data.licensePlate),
-                  ],
-                ),
-              ),
-              context.addVerticalSpace(12),
-              AssignmentInfoCard(
-                label: strings.location,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AssignmentInfoLines(
-                      lines: [
-                        _value(context, data.street),
-                        _value(context, data.city),
-                        _value(context, data.coordinates?.label),
-                      ],
-                    ),
-                    context.addVerticalSpace(12),
-                    const AccidentMapPreview(height: 108),
-                  ],
-                ),
-              ),
-              context.addVerticalSpace(12),
-              AssignmentInfoCard(
-                label: strings.assignment,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      strings.assignedTo,
-                      style: context.font14Regular?.copyWith(
-                        color: colors.textSecondaryColor,
-                      ),
-                    ),
-                    context.addVerticalSpace(2),
-                    Text(
-                      _value(context, data.assignedToName),
-                      style: context.font16Bold?.copyWith(
-                        color: colors.textPrimaryColor,
-                      ),
-                    ),
-                    context.addVerticalSpace(12),
-                    Text(
-                      strings.assignedBy,
-                      style: context.font14Regular?.copyWith(
-                        color: colors.textSecondaryColor,
-                      ),
-                    ),
-                    context.addVerticalSpace(2),
-                    Text(
-                      _value(context, data.assignedBy),
-                      style: context.font16Bold?.copyWith(
-                        color: colors.textPrimaryColor,
-                      ),
-                    ),
-                    context.addVerticalSpace(12),
-                    Text(
-                      strings.assignedDateLabel,
-                      style: context.font14Regular?.copyWith(
-                        color: colors.textSecondaryColor,
-                      ),
-                    ),
-                    context.addVerticalSpace(2),
-                    Text(
-                      data.assignedAt == null
-                          ? strings.notAvailable
-                          : ClaimDateFormatter.assignedOn(data.assignedAt!),
-                      style: context.font16Bold?.copyWith(
-                        color: colors.textPrimaryColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (claim.status == ClaimStatus.correctionRequired &&
-                  (claim.notes?.trim().isNotEmpty ?? false)) ...[
-                context.addVerticalSpace(12),
-                AssignmentInfoCard(
-                  label: strings.requestedCorrection,
-                  child: Text(
-                    claim.notes!.trim(),
-                    style: context.font16Regular?.copyWith(
-                      color: colors.textPrimaryColor,
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-              ],
+              ClaimDetailSections(claim: claim),
               if (claim.status.showsInspectionProgress) ...[
                 context.addVerticalSpace(16),
                 ClaimProgressView(claim: claim, embedded: true),
@@ -306,8 +200,14 @@ class _DetailsBody extends StatelessWidget {
               padding: context.spaceSymmetric(vertical: 16, horizontal: 20),
               child: _ClaimDetailsCta(
                 claim: claim,
-                claimNumber: data.claimId,
-                vehicle: _value(context, data.vehicle),
+                claimNumber: claim.displayNumber,
+                // The confirmation sheet names the vehicle; before the
+                // registry lookup only the plate is known, so that is
+                // what it shows.
+                vehicle:
+                    claim.vehicleMakeModel ??
+                    claim.plateNumber ??
+                    strings.notAvailable,
                 isStarting: isStarting,
                 startError: startError,
               ),
@@ -316,13 +216,6 @@ class _DetailsBody extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  String _value(BuildContext context, String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return AppStrings.of(context).notAvailable;
-    }
-    return value;
   }
 }
 

@@ -26,4 +26,5 @@ class Routes {
   static const String customerSignatureScreen = '/customerSignatureScreen';
   static const String claimReviewScreen = '/claimReviewScreen';
   static const String claimValidationScreen = '/claimValidationScreen';
+  static const String claimLocationMapScreen = '/claimLocationMapScreen';
 }

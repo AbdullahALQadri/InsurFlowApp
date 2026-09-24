@@ -7,7 +7,7 @@ import 'package:insurflow/features/claims/domain/claim_validation_progress.dart'
 import 'package:insurflow/features/claims/domain/inspection_progress.dart';
 import 'package:insurflow/features/claims/domain/vehicle_evidence.dart';
 import 'package:insurflow/features/claims/domain/vehicle_lookup_progress.dart';
-import 'package:insurflow/features/claims/domain/vehicle_lookup_result.dart';
+import 'package:insurflow/features/claims/domain/entities/claim_details.dart';
 
 class AppStrings {
   const AppStrings(this.locale);
@@ -379,6 +379,90 @@ class AppStrings {
       : "You won't be able to edit the claim unless a correction is requested.";
   String get locationCaptured => isArabic ? 'تم التوثيق' : 'Captured';
   String get policyActiveShort => isArabic ? 'سارية' : 'Active';
+
+  String get vehicleLinkUnavailable => isArabic
+      ? 'لا توجد بيانات مركبة أو وثيقة مرتبطة بهذه اللوحة لربطها بالمطالبة.'
+      : 'No vehicle, customer or policy record was returned for this plate, so nothing can be linked to the claim.';
+
+  // --- Labels for fields returned by GET /claims/{id} -------------------
+  // Each maps to a real key in the claim detail payload. Nothing here
+  // is shown unless the backend actually sent a value for it.
+
+  String get claimPolicy => isArabic ? 'الوثيقة' : 'POLICY';
+  String get claimAccident => isArabic ? 'الحادث' : 'ACCIDENT';
+  String get claimEvidence => isArabic ? 'الأدلة' : 'EVIDENCE';
+  String get claimSignature => isArabic ? 'التوقيع' : 'SIGNATURE';
+  String get claimActivity => isArabic ? 'سجل النشاط' : 'ACTIVITY';
+  String get reportedIncident =>
+      isArabic ? 'البلاغ الأولي' : 'REPORTED INCIDENT';
+  String get capturedLocation =>
+      isArabic ? 'الموقع الموثّق' : 'CAPTURED LOCATION';
+  String get claimClosure => isArabic ? 'الإغلاق' : 'CLOSURE';
+
+  // --- Claim location map ------------------------------------------------
+
+  String get claimLocation => isArabic ? 'موقع المطالبة' : 'Claim Location';
+  String get claimLocationSection =>
+      isArabic ? 'موقع المطالبة' : 'CLAIM LOCATION';
+  String get locationUnavailable =>
+      isArabic ? 'الموقع غير متوفر' : 'Location unavailable';
+  String get viewLargerMap => isArabic ? 'تكبير' : 'Expand';
+  String get reportedPositionLabel =>
+      isArabic ? 'الموقع المبلّغ عنه' : 'Reported position';
+  String get capturedPositionLabel =>
+      isArabic ? 'الموقع الموثّق ميدانياً' : 'Adjuster-captured position';
+
+  String get policyNumberLabel => isArabic ? 'رقم الوثيقة' : 'Policy number';
+  String get policyPeriodLabel => isArabic ? 'سريان الوثيقة' : 'Coverage';
+  String get policyStatusFieldLabel => isArabic ? 'الحالة' : 'Status';
+  String get priorityLabel => isArabic ? 'الأولوية' : 'Priority';
+  String get incidentTypeLabel => isArabic ? 'نوع البلاغ' : 'Incident type';
+  String get assignmentNotesLabel => isArabic ? 'ملاحظات الإسناد' : 'Notes';
+  String get damageDescriptionLabel =>
+      isArabic ? 'وصف الأضرار' : 'Damage description';
+  String get customerPhoneLabel => isArabic ? 'الهاتف' : 'Phone';
+  String get customerNameLabel => isArabic ? 'الاسم' : 'Name';
+  String get plateNumberLabel => isArabic ? 'رقم اللوحة' : 'Plate number';
+  String get makeModelLabel => isArabic ? 'الماركة والطراز' : 'Make & model';
+  String get yearLabel => isArabic ? 'سنة الصنع' : 'Year';
+  String get colorLabel => isArabic ? 'اللون' : 'Color';
+  String get coordinatesLabel => isArabic ? 'الإحداثيات' : 'Coordinates';
+  String get capturedAtLabel => isArabic ? 'وقت التوثيق' : 'Captured';
+  String get createdByLabel => isArabic ? 'أنشأها' : 'Created by';
+  String get createdAtLabel => isArabic ? 'تاريخ الإنشاء' : 'Created';
+  String get closedByLabel => isArabic ? 'أغلقها' : 'Closed by';
+  String get closedAtLabel => isArabic ? 'تاريخ الإغلاق' : 'Closed';
+  String get closingNotesLabel =>
+      isArabic ? 'ملاحظات الإغلاق' : 'Closing notes';
+  String get decisionNotesLabel =>
+      isArabic ? 'ملاحظات القرار' : 'Decision notes';
+  String get uploadedByLabel => isArabic ? 'رفعها' : 'Uploaded by';
+
+  String get noVehicleDetailsYet => isArabic
+      ? 'لم يتم توثيق بيانات المركبة بعد.'
+      : 'Vehicle details not recorded yet.';
+  String get noAccidentDetailsYet => isArabic
+      ? 'لم يتم توثيق تفاصيل الحادث بعد.'
+      : 'Accident details not recorded yet.';
+  String get noLocationCapturedYet =>
+      isArabic ? 'لم يتم توثيق الموقع بعد.' : 'Location not captured yet.';
+  String get noEvidenceUploadedYet =>
+      isArabic ? 'لم يتم رفع أي صور بعد.' : 'No evidence photos uploaded yet.';
+  String get noSignatureCapturedYet => isArabic
+      ? 'لم يتم توقيع العميل بعد.'
+      : 'Customer signature not captured yet.';
+  String get noPolicyLinkedYet => isArabic
+      ? 'لم يتم ربط وثيقة تأمين بعد.'
+      : 'No policy linked to this claim yet.';
+  String get evidenceImageUnavailable =>
+      isArabic ? 'تعذّر تحميل الصورة' : 'Image unavailable';
+
+  String evidencePhotoCount(int count) => isArabic
+      ? (count == 1 ? 'صورة واحدة' : '$count صور')
+      : (count == 1 ? '1 photo' : '$count photos');
+
+  String statusTransitionLabel(String from, String to) => '$from -> $to';
+
   String reviewEvidenceCount(int completed, int total) =>
       isArabic ? '$completed / $total صور' : '$completed / $total photos';
   String reviewDocumentsCount(int completed, int total) => isArabic
@@ -548,14 +632,14 @@ class AppStrings {
 
   String accidentTypeLabel(AccidentType type) {
     switch (type) {
-      case AccidentType.rearEnd:
+      case AccidentType.collision:
+        return isArabic ? 'اصطدام' : 'Collision';
+      case AccidentType.rearEndCollision:
         return isArabic ? 'اصطدام خلفي' : 'Rear-end Collision';
-      case AccidentType.front:
-        return isArabic ? 'اصطدام أمامي' : 'Front Collision';
-      case AccidentType.side:
-        return isArabic ? 'اصطدام جانبي' : 'Side Collision';
-      case AccidentType.multipleVehicle:
-        return isArabic ? 'تصادم عدة مركبات' : 'Multiple Vehicle Collision';
+      case AccidentType.sideImpact:
+        return isArabic ? 'اصطدام جانبي' : 'Side Impact';
+      case AccidentType.parkingDamage:
+        return isArabic ? 'ضرر أثناء الوقوف' : 'Parking Damage';
       case AccidentType.other:
         return isArabic ? 'أخرى' : 'Other';
     }
@@ -612,13 +696,14 @@ class AppStrings {
     }
   }
 
-  String policyStatusLabel(PolicyStatus status) {
-    switch (status) {
-      case PolicyStatus.active:
-        return policyStatusActive;
-      case PolicyStatus.unknown:
-        return isArabic ? 'غير معروف' : 'Unknown';
-    }
+  /// Localises the raw `policy.status` the backend sends. `ACTIVE` is
+  /// the only value observed so far; anything else is shown as the
+  /// backend spelled it rather than mapped to an invented label.
+  String? policyStatusLabel(String? rawStatus) {
+    final value = rawStatus?.trim();
+    if (value == null || value.isEmpty) return null;
+    if (value.toUpperCase() == 'ACTIVE') return policyStatusActive;
+    return humanizeEnum(value);
   }
 
   String vehicleLookupItemLabel(VehicleLookupItem item) {

@@ -11,7 +11,6 @@ import 'package:insurflow/core/global/design_system/theme_data/theme_extension.d
 import 'package:insurflow/core/global/design_system/widgets/app_primary_button.dart';
 import 'package:insurflow/core/l10n/app_strings.dart';
 import 'package:insurflow/core/routing/routes.dart';
-import 'package:insurflow/features/claims/domain/claim_review_summary.dart';
 import 'package:insurflow/features/claims/domain/claim_validation_progress.dart';
 import 'package:insurflow/features/claims/domain/inspection_progress.dart';
 import 'package:insurflow/features/claims/presentation/widgets/claim_validation_animation.dart';
@@ -19,9 +18,13 @@ import 'package:insurflow/features/claims/presentation/widgets/claim_validation_
 import 'package:insurflow/features/claims/presentation/widgets/submit_claim_confirmation_sheet.dart';
 
 class ClaimValidationArgs {
-  const ClaimValidationArgs({required this.summary});
+  const ClaimValidationArgs({required this.claimId, this.claimNumber});
 
-  final ClaimReviewSummary summary;
+  final String claimId;
+
+  /// `claimNumber` from the claim payload, used only for the
+  /// confirmation sheet. Null when the caller does not hold it.
+  final String? claimNumber;
 }
 
 class ClaimValidationScreen extends StatefulWidget {
@@ -34,15 +37,19 @@ class ClaimValidationScreen extends StatefulWidget {
 
   final ClaimValidationArgs args;
   final Duration validationDuration;
-  final ValueChanged<ClaimReviewSummary>? onContinue;
+  final ValueChanged<String>? onContinue;
 
   static Future<dynamic> open(
     BuildContext context, {
-    required ClaimReviewSummary summary,
+    required String claimId,
+    String? claimNumber,
   }) {
     return context.pushNamed(
       Routes.claimValidationScreen,
-      arguments: ClaimValidationArgs(summary: summary),
+      arguments: ClaimValidationArgs(
+        claimId: claimId,
+        claimNumber: claimNumber,
+      ),
     );
   }
 
@@ -94,7 +101,7 @@ class _ClaimValidationScreenState extends State<ClaimValidationScreen>
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: overlay,
       child: Scaffold(
-        key: ValueKey(widget.args.summary.claimId),
+        key: ValueKey(widget.args.claimId),
         backgroundColor: colors.backgroundColor,
         body: SafeArea(
           child: Column(
@@ -204,13 +211,15 @@ class _ClaimValidationScreenState extends State<ClaimValidationScreen>
 
   Future<void> _continue() async {
     if (widget.onContinue != null) {
-      widget.onContinue!(widget.args.summary);
+      widget.onContinue!(widget.args.claimId);
       return;
     }
 
     final confirmed = await SubmitClaimConfirmationSheet.show(
       context,
-      claimNumber: widget.args.summary.claimNumber,
+      // `claimNumber` when the caller carried it through; otherwise the
+      // claim id, which is what the backend itself falls back to.
+      claimNumber: widget.args.claimNumber ?? widget.args.claimId,
     );
     if (!mounted || confirmed != true) return;
 
@@ -220,7 +229,7 @@ class _ClaimValidationScreenState extends State<ClaimValidationScreen>
 
     try {
       final result = await AppDependencies.instance.submitClaimUseCase(
-        widget.args.summary.claimId,
+        widget.args.claimId,
       );
       if (!mounted) return;
       result.fold(
@@ -231,7 +240,7 @@ class _ClaimValidationScreenState extends State<ClaimValidationScreen>
           );
         },
         (_) {
-          InspectionProgress.completeAll(widget.args.summary.claimId);
+          InspectionProgress.completeAll(widget.args.claimId);
           messenger.hideCurrentSnackBar();
           messenger.showSnackBar(
             SnackBar(content: Text(strings.claimSubmitted)),

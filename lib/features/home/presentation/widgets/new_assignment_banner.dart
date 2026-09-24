@@ -59,16 +59,19 @@ class NewAssignmentBanner extends StatelessWidget {
             ],
           ),
           context.addVerticalSpace(12),
-          Text(
-            claim.vehicleDisplay.isNotEmpty
-                ? claim.vehicleDisplay
-                : strings.vehicleInformation,
-            style: context.font16Bold?.copyWith(
-              color: colors.textPrimaryColor,
-              fontWeight: FontWeightHelper.semiBold,
+          // `GET /claims` has no make/model — only the plate. Show
+          // whichever the loaded claim actually carries, and nothing
+          // when it carries neither.
+          if (claim.vehicleMakeModel != null || claim.plateNumber != null)
+            Text(
+              claim.vehicleMakeModel ?? claim.plateNumber!,
+              style: context.font16Bold?.copyWith(
+                color: colors.textPrimaryColor,
+                fontWeight: FontWeightHelper.semiBold,
+              ),
             ),
-          ),
-          if (claim.incidentLocation != null && claim.incidentLocation!.isNotEmpty) ...[
+          if (claim.incidentLocation != null &&
+              claim.incidentLocation!.isNotEmpty) ...[
             context.addVerticalSpace(4),
             Row(
               children: [

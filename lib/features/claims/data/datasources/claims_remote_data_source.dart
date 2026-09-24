@@ -89,21 +89,16 @@ class ClaimsRemoteDataSourceImpl implements ClaimsRemoteDataSource {
 
   @override
   Future<Claim> startClaim(String claimId) async {
-    final response = await _dio.post<dynamic>(
-      '/claims/$claimId/inspection/start',
-    );
-    final claim = ClaimModel.fromResponse(response.data);
-    if (claim != null) return claim;
+    // The start response carries only `{status}` — re-read the claim
+    // so callers get the full detail payload.
+    await _dio.post<dynamic>('/claims/$claimId/inspection/start');
     return getClaimDetails(claimId);
   }
 
   @override
   Future<Claim> submitClaim(String claimId) async {
-    final response = await _dio.post<dynamic>(
-      '/claims/$claimId/inspection/submit',
-    );
-    final claim = ClaimModel.fromResponse(response.data);
-    if (claim != null) return claim;
+    // The submit response carries only `{status}` — re-read the claim.
+    await _dio.post<dynamic>('/claims/$claimId/inspection/submit');
     return getClaimDetails(claimId);
   }
 
@@ -112,9 +107,11 @@ class ClaimsRemoteDataSourceImpl implements ClaimsRemoteDataSource {
     required String claimId,
     required String plateNumber,
   }) async {
+    // The backend allow-lists query params and rejects anything else
+    // with 400 ("plate" is not allowed) — send `plateNumber` only.
     final response = await _dio.get<dynamic>(
       '/vehicles/lookup',
-      queryParameters: {'plateNumber': plateNumber, 'plate': plateNumber},
+      queryParameters: {'plateNumber': plateNumber},
     );
     return VehicleLookupResult.fromResponse(
       response.data,
@@ -188,8 +185,10 @@ class ClaimsRemoteDataSourceImpl implements ClaimsRemoteDataSource {
     required String filePath,
     required String imageType,
   }) async {
+    // Multer expects the file under `file`; any other field name is
+    // rejected with 500 LIMIT_UNEXPECTED_FILE.
     final formData = FormData.fromMap({
-      'image': await MultipartFile.fromFile(filePath),
+      'file': await MultipartFile.fromFile(filePath),
       'imageType': imageType,
     });
     final response = await _dio.post<dynamic>(
@@ -204,8 +203,9 @@ class ClaimsRemoteDataSourceImpl implements ClaimsRemoteDataSource {
     required String claimId,
     required String filePath,
   }) async {
+    // Same multipart field name as the evidence upload.
     final formData = FormData.fromMap({
-      'signature': await MultipartFile.fromFile(filePath),
+      'file': await MultipartFile.fromFile(filePath),
     });
     final response = await _dio.post<dynamic>(
       '/claims/$claimId/signature',

@@ -7,13 +7,13 @@ import 'package:insurflow/core/global/design_system/app_color/app_splash_colors.
 import 'package:insurflow/core/global/design_system/font_weight/font_weight_helper.dart';
 import 'package:insurflow/core/helpers/app_asset_helper.dart';
 import 'package:insurflow/core/l10n/app_strings.dart';
-import 'package:insurflow/features/claims/domain/claim_assignment.dart';
+import 'package:insurflow/features/claims/domain/entities/claim.dart';
 import 'package:insurflow/features/home/presentation/widgets/claim_status_badge.dart';
 
 class AssignmentHeader extends StatelessWidget {
-  const AssignmentHeader({super.key, required this.assignment});
+  const AssignmentHeader({super.key, required this.claim});
 
-  final ClaimAssignment assignment;
+  final Claim claim;
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +62,7 @@ class AssignmentHeader extends StatelessWidget {
                   ),
                   context.addVerticalSpace(8),
                   Text(
-                    assignment.claimId,
+                    claim.displayNumber,
                     style: context.font18Bold?.copyWith(
                       color: AppSplashColors.cyan,
                       letterSpacing: 0.4,
@@ -70,7 +70,7 @@ class AssignmentHeader extends StatelessWidget {
                     ),
                   ),
                   context.addVerticalSpace(10),
-                  ClaimStatusBadge(status: assignment.status),
+                  ClaimStatusBadge(status: claim.status),
                   context.addVerticalSpace(14),
                   Text(
                     AppStrings.of(context).assignedTaskMessage,

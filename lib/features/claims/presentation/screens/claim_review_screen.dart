@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:insurflow/core/di/app_dependencies.dart';
 import 'package:insurflow/core/extensions/app_sizes.dart';
 import 'package:insurflow/core/extensions/navigation.dart';
 import 'package:insurflow/core/extensions/text_style_extension.dart';
 import 'package:insurflow/core/global/design_system/font_weight/font_weight_helper.dart';
 import 'package:insurflow/core/global/design_system/theme_data/theme_extension.dart';
+import 'package:insurflow/core/global/design_system/widgets/api_state_views.dart';
 import 'package:insurflow/core/global/design_system/widgets/app_primary_button.dart';
 import 'package:insurflow/core/l10n/app_strings.dart';
 import 'package:insurflow/core/routing/routes.dart';
-import 'package:insurflow/features/claims/domain/accident_location.dart';
 import 'package:insurflow/features/claims/domain/claim_review_summary.dart';
 import 'package:insurflow/features/claims/domain/inspection_progress.dart';
-import 'package:insurflow/features/claims/domain/vehicle_lookup_result.dart';
+import 'package:insurflow/features/claims/presentation/bloc/claim_details_bloc.dart';
 import 'package:insurflow/features/claims/presentation/screens/accident_details_screen.dart';
-import 'package:insurflow/features/claims/presentation/screens/accident_location_screen.dart';
-import 'package:insurflow/features/claims/presentation/screens/claim_documents_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/claim_validation_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/customer_signature_screen.dart';
+import 'package:insurflow/features/claims/presentation/screens/location_permission_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/vehicle_evidence_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/vehicle_identification_screen.dart';
+import 'package:insurflow/features/claims/presentation/utils/claim_date_formatter.dart';
 import 'package:insurflow/features/claims/presentation/widgets/claim_ready_banner.dart';
 import 'package:insurflow/features/claims/presentation/widgets/claim_review_section_card.dart';
 import 'package:insurflow/features/claims/presentation/widgets/inspection_step_track.dart';
@@ -27,9 +29,19 @@ class ClaimReviewArgs {
   const ClaimReviewArgs({required this.claimId, this.summary});
 
   final String claimId;
+
+  /// Supplied by tests and by callers that already hold a snapshot.
+  /// When null the screen loads the claim from `GET /claims/{id}`.
   final ClaimReviewSummary? summary;
 }
 
+/// Final review before submitting the inspection.
+///
+/// Reads the claim back from the backend so every value shown is the
+/// server's own state, not what the app believes it uploaded. That also
+/// makes the Submit button agree with
+/// `POST /claims/{id}/inspection/submit`, which rejects an incomplete
+/// claim with `Inspection incomplete. Missing: ...`.
 class ClaimReviewScreen extends StatelessWidget {
   const ClaimReviewScreen({
     super.key,
@@ -57,10 +69,97 @@ class ClaimReviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provided = args.summary;
+    if (provided != null) {
+      return _ReviewScaffold(
+        summary: provided,
+        onEdit: onEdit,
+        onSubmit: onSubmit,
+      );
+    }
+
+    return BlocProvider(
+      create: (_) =>
+          AppDependencies.instance.createClaimDetailsBloc()
+            ..add(ClaimDetailsRequested(args.claimId)),
+      child: _ReviewLoader(
+        claimId: args.claimId,
+        onEdit: onEdit,
+        onSubmit: onSubmit,
+      ),
+    );
+  }
+}
+
+class _ReviewLoader extends StatelessWidget {
+  const _ReviewLoader({required this.claimId, this.onEdit, this.onSubmit});
+
+  final String claimId;
+  final ValueChanged<ClaimReviewSectionId>? onEdit;
+  final ValueChanged<ClaimReviewSummary>? onSubmit;
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
+
+    return BlocBuilder<ClaimDetailsBloc, ClaimDetailsState>(
+      builder: (context, state) {
+        if (state is ClaimDetailsLoadFailure) {
+          return Scaffold(
+            backgroundColor: context.colors.backgroundColor,
+            appBar: AppBar(
+              backgroundColor: context.colors.backgroundColor,
+              foregroundColor: context.colors.textPrimaryColor,
+              elevation: 0,
+            ),
+            body: ApiErrorView(
+              message: strings.messageFor(state.failure),
+              onRetry: () => context.read<ClaimDetailsBloc>().add(
+                ClaimDetailsRequested(claimId),
+              ),
+            ),
+          );
+        }
+
+        final claim = switch (state) {
+          ClaimDetailsLoadSuccess(:final claim) => claim,
+          ClaimDetailsStarted(:final claim) => claim,
+          _ => null,
+        };
+
+        if (claim == null) {
+          return Scaffold(
+            backgroundColor: context.colors.backgroundColor,
+            appBar: AppBar(
+              backgroundColor: context.colors.backgroundColor,
+              foregroundColor: context.colors.textPrimaryColor,
+              elevation: 0,
+            ),
+            body: ApiLoadingView(message: strings.loadingClaimDetails),
+          );
+        }
+
+        return _ReviewScaffold(
+          summary: ClaimReviewSummary.fromClaim(claim),
+          onEdit: onEdit,
+          onSubmit: onSubmit,
+        );
+      },
+    );
+  }
+}
+
+class _ReviewScaffold extends StatelessWidget {
+  const _ReviewScaffold({required this.summary, this.onEdit, this.onSubmit});
+
+  final ClaimReviewSummary summary;
+  final ValueChanged<ClaimReviewSectionId>? onEdit;
+  final ValueChanged<ClaimReviewSummary>? onSubmit;
+
+  @override
+  Widget build(BuildContext context) {
     final colors = context.colors;
     final strings = AppStrings.of(context);
-    final summary =
-        args.summary ?? ClaimReviewSummary.pending(claimId: args.claimId);
     final overlay = SystemUiOverlayStyle.light.copyWith(
       statusBarColor: Colors.transparent,
       systemNavigationBarColor: colors.cardColor,
@@ -193,13 +292,14 @@ class ClaimReviewScreen extends StatelessWidget {
         return strings.inspectionStepLabel(InspectionStepId.location);
       case ClaimReviewSectionId.evidence:
         return strings.inspectionStepLabel(InspectionStepId.evidence);
-      case ClaimReviewSectionId.documents:
-        return strings.inspectionStepLabel(InspectionStepId.documents);
       case ClaimReviewSectionId.signature:
         return strings.inspectionStepLabel(InspectionStepId.signature);
     }
   }
 
+  /// Each line is a value the backend actually holds. A section with no
+  /// server-side data shows its own "not recorded yet" line rather than
+  /// a placeholder value.
   List<String> _checks(
     AppStrings strings,
     ClaimReviewSummary summary,
@@ -208,55 +308,63 @@ class ClaimReviewScreen extends StatelessWidget {
     switch (section) {
       case ClaimReviewSectionId.vehicle:
         return [
-          summary.licensePlate.isNotEmpty
-              ? summary.licensePlate
-              : strings.notAvailable,
-          summary.makeModel.isNotEmpty
-              ? summary.makeModel
-              : strings.notAvailable,
+          if (summary.licensePlate != null) summary.licensePlate!,
+          if (summary.makeModel != null) summary.makeModel!,
+          if (summary.vehicleYear != null) '${summary.vehicleYear}',
+          if (summary.vehicleColor != null)
+            strings.vehicleColorLabel(summary.vehicleColor!),
+          if (!summary.vehicleLinked) strings.noVehicleDetailsYet,
         ];
       case ClaimReviewSectionId.customer:
         return [
-          summary.customerName.isNotEmpty
-              ? summary.customerName
-              : strings.notAvailable,
+          if (summary.customerName != null) summary.customerName!,
+          if (summary.customerPhone != null) summary.customerPhone!,
         ];
       case ClaimReviewSectionId.policy:
         return [
-          summary.policyNumber.isNotEmpty
-              ? summary.policyNumber
-              : strings.notAvailable,
-          if (summary.policyStatus == PolicyStatus.active)
-            strings.policyActiveShort,
+          if (summary.policyNumber != null) summary.policyNumber!,
+          if (summary.policyStatus != null)
+            strings.policyStatusLabel(summary.policyStatus)!,
+          if (summary.policyNumber == null) strings.noPolicyLinkedYet,
         ];
       case ClaimReviewSectionId.accident:
         return [
-          summary.accidentType != null
-              ? strings.accidentTypeLabel(summary.accidentType!)
-              : strings.notAvailable,
-          if (summary.accidentDateComplete) strings.accidentDate,
-          if (summary.accidentTimeComplete) strings.accidentTime,
-          if (summary.accidentDescriptionComplete) strings.accidentDescription,
+          if (summary.accidentTypeLabel != null) summary.accidentTypeLabel!,
+          if (summary.accidentDate != null)
+            _formatAccidentDate(summary.accidentDate!),
+          if (summary.accidentTime != null) summary.accidentTime!,
+          if (summary.accidentDescription != null) summary.accidentDescription!,
+          if (summary.damageDescription != null) summary.damageDescription!,
+          if (!summary.hasAccident) strings.noAccidentDetailsYet,
         ];
       case ClaimReviewSectionId.location:
-        return [if (summary.locationCaptured) strings.locationCaptured];
+        return [
+          if (summary.locationAddress != null) summary.locationAddress!,
+          if (summary.locationCoordinates != null) summary.locationCoordinates!,
+          if (!summary.hasLocation) strings.noLocationCapturedYet,
+        ];
       case ClaimReviewSectionId.evidence:
         return [
-          strings.reviewEvidenceCount(
-            summary.evidenceCompleted,
-            summary.evidenceTotal,
-          ),
-        ];
-      case ClaimReviewSectionId.documents:
-        return [
-          strings.reviewDocumentsCount(
-            summary.documentsCompleted,
-            summary.documentsTotal,
-          ),
+          if (summary.hasEvidence)
+            strings.evidencePhotoCount(summary.evidenceCount)
+          else
+            strings.noEvidenceUploadedYet,
         ];
       case ClaimReviewSectionId.signature:
-        return [if (summary.signatureCompleted) strings.completedStepHint];
+        return [
+          if (summary.signatureCaptured)
+            strings.locationCaptured
+          else
+            strings.noSignatureCapturedYet,
+        ];
     }
+  }
+
+  /// `accidentDate` arrives as `YYYY-MM-DD`; anything unparseable is
+  /// shown exactly as the backend sent it.
+  String _formatAccidentDate(String raw) {
+    final parsed = DateTime.tryParse(raw);
+    return parsed == null ? raw : ClaimDateFormatter.dayMonthYear(parsed);
   }
 
   void _edit(
@@ -273,21 +381,16 @@ class ClaimReviewScreen extends StatelessWidget {
       case ClaimReviewSectionId.vehicle:
       case ClaimReviewSectionId.customer:
       case ClaimReviewSectionId.policy:
-        // TODO(api): Editing vehicle/customer/policy restarts the real
-        // lookup flow (plate capture -> GET /vehicles/lookup). The last
-        // lookup result is not persisted yet, so it is not faked here.
+        // Vehicle, customer and policy are all written by the single
+        // `PUT /claims/{id}/vehicle` call, so editing any of them means
+        // re-running the plate capture and lookup.
         VehicleIdentificationScreen.open(context, claimId: summary.claimId);
       case ClaimReviewSectionId.accident:
         AccidentDetailsScreen.open(context, claimId: summary.claimId);
       case ClaimReviewSectionId.location:
-        AccidentLocationScreen.open(
-          context,
-          location: AccidentLocation.pending(claimId: summary.claimId),
-        );
+        LocationPermissionScreen.open(context, claimId: summary.claimId);
       case ClaimReviewSectionId.evidence:
         VehicleEvidenceScreen.open(context, claimId: summary.claimId);
-      case ClaimReviewSectionId.documents:
-        ClaimDocumentsScreen.open(context, claimId: summary.claimId);
       case ClaimReviewSectionId.signature:
         CustomerSignatureScreen.open(context, claimId: summary.claimId);
     }
@@ -299,6 +402,10 @@ class ClaimReviewScreen extends StatelessWidget {
       return;
     }
     InspectionProgress.complete(summary.claimId, InspectionStepId.review);
-    ClaimValidationScreen.open(context, summary: summary);
+    ClaimValidationScreen.open(
+      context,
+      claimId: summary.claimId,
+      claimNumber: summary.claimNumber,
+    );
   }
 }

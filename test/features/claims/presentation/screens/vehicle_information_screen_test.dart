@@ -13,14 +13,17 @@ void main() {
   VehicleLookupResult lookupFixture() {
     return VehicleLookupResult(
       claimId: 'CLM-0001',
+      vehicleId: 'veh-1',
       makeModel: 'Toyota Corolla',
       year: 2022,
-      colorKey: 'white',
+      color: 'white',
       licensePlate: 'ABC-1234',
+      customerId: 'cus-1',
       customerName: 'Ahmed Ali',
       customerPhone: '059xxxxxxx',
+      policyId: 'pol-1',
       policyNumber: 'POL-102938',
-      policyStatus: PolicyStatus.active,
+      policyStatus: 'ACTIVE',
       policyStart: DateTime(2026, 1, 1),
       policyEnd: DateTime(2026, 12, 31),
     );

@@ -1,21 +1,41 @@
-enum AccidentType { rearEnd, front, side, multipleVehicle, other }
+/// The accident types `PUT /claims/{id}/accident` accepts.
+///
+/// The backend validates this field against exactly these five values
+/// and rejects anything else with 400: `"accidentType" must be one of
+/// [COLLISION, REAR_END_COLLISION, SIDE_IMPACT, PARKING_DAMAGE, OTHER]`.
+enum AccidentType {
+  collision,
+  rearEndCollision,
+  sideImpact,
+  parkingDamage,
+  other,
+}
 
 extension AccidentTypeApi on AccidentType {
-  /// Values follow the Postman example `REAR_END_COLLISION` plus the
-  /// matching collision labels used in the Field Adjuster UI.
   String get apiValue {
     switch (this) {
-      case AccidentType.rearEnd:
+      case AccidentType.collision:
+        return 'COLLISION';
+      case AccidentType.rearEndCollision:
         return 'REAR_END_COLLISION';
-      case AccidentType.front:
-        return 'FRONT_COLLISION';
-      case AccidentType.side:
-        return 'SIDE_COLLISION';
-      case AccidentType.multipleVehicle:
-        return 'MULTIPLE_VEHICLE_COLLISION';
+      case AccidentType.sideImpact:
+        return 'SIDE_IMPACT';
+      case AccidentType.parkingDamage:
+        return 'PARKING_DAMAGE';
       case AccidentType.other:
         return 'OTHER';
     }
+  }
+
+  /// Maps a value coming back from `GET /claims/{id}`. Returns null for
+  /// a value this app does not know, so nothing is mis-labelled.
+  static AccidentType? fromApi(String? raw) {
+    final value = raw?.trim().toUpperCase();
+    if (value == null || value.isEmpty) return null;
+    for (final type in AccidentType.values) {
+      if (type.apiValue == value) return type;
+    }
+    return null;
   }
 }
 
