@@ -3,6 +3,7 @@ import 'package:insurflow/core/error/failures.dart';
 import 'package:insurflow/features/claims/domain/accident_details.dart';
 import 'package:insurflow/features/claims/domain/claim_status.dart';
 import 'package:insurflow/features/claims/domain/claim_validation_progress.dart';
+import 'package:insurflow/features/claims/domain/claim_review_summary.dart';
 import 'package:insurflow/features/claims/domain/inspection_progress.dart';
 import 'package:insurflow/features/claims/domain/vehicle_evidence.dart';
 import 'package:insurflow/features/claims/domain/vehicle_lookup_progress.dart';
@@ -441,6 +442,50 @@ class AppStrings {
   String get reviewClaim => isArabic ? 'مراجعة المطالبة' : 'Review Claim';
   String get claimReadyToSubmit =>
       isArabic ? 'المطالبة جاهزة للتقديم' : 'Claim is ready to submit';
+  String get claimNotReadyTitle => isArabic
+      ? 'المطالبة غير مكتملة بعد'
+      : 'This claim is not ready yet';
+
+  /// Names the review sections the backend would still reject the
+  /// claim for, joined the way each language lists things.
+  String claimStillNeeds(List<String> sections) {
+    final list = _joinList(sections);
+    return isArabic ? 'ما زال مطلوباً: $list' : 'Still needed: $list';
+  }
+
+  /// Joins a list the way each language does: Arabic separates with an
+  /// Arabic comma and prefixes the last item with "و", English uses
+  /// commas and "and".
+  String _joinList(List<String> parts) {
+    if (parts.isEmpty) return '';
+    if (parts.length == 1) return parts.first;
+    final head = parts.sublist(0, parts.length - 1);
+    final last = parts.last;
+    return isArabic
+        ? '${head.join('، ')} و$last'
+        : '${head.join(', ')} and $last';
+  }
+
+  /// Section titles used by the review screen and its banners.
+  String reviewSectionLabel(ClaimReviewSectionId section) {
+    switch (section) {
+      case ClaimReviewSectionId.vehicle:
+        return vehicleSection;
+      case ClaimReviewSectionId.customer:
+        return customerSection;
+      case ClaimReviewSectionId.policy:
+        return policySection;
+      case ClaimReviewSectionId.accident:
+        return inspectionStepLabel(InspectionStepId.accident);
+      case ClaimReviewSectionId.location:
+        return inspectionStepLabel(InspectionStepId.location);
+      case ClaimReviewSectionId.evidence:
+        return inspectionStepLabel(InspectionStepId.evidence);
+      case ClaimReviewSectionId.signature:
+        return inspectionStepLabel(InspectionStepId.signature);
+    }
+  }
+
   String get submitClaim => isArabic ? 'تقديم المطالبة' : 'Submit Claim';
   String get checkingYourClaim =>
       isArabic ? 'جارٍ التحقق من مطالبتك' : 'Checking your claim';

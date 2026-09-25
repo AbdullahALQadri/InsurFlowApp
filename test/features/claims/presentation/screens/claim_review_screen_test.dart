@@ -150,4 +150,109 @@ void main() {
     expect(submitted?.claimNumber, 'CLM-0001');
     expect(submitted?.makeModel, 'Toyota Corolla');
   });
+
+  testWidgets('an incomplete claim names what the backend still needs', (
+    tester,
+  ) async {
+    // `POST /claims/{id}/inspection/submit` answers "Inspection
+    // incomplete. Missing: accident, signature" for this claim, so the
+    // screen says the same before the request is spent.
+    await pumpScreen(
+      tester,
+      ClaimReviewScreen(
+        args: ClaimReviewArgs(
+          claimId: '6a91ab09c9ff1dc54fabf15b',
+          summary: const ClaimReviewSummary(
+            claimId: '6a91ab09c9ff1dc54fabf15b',
+            claimNumber: 'CLM-0001',
+            licensePlate: 'ABC-1234',
+            makeModel: 'Toyota Corolla',
+            locationAddress: 'King Fahd Road, Riyadh',
+            evidenceCount: 2,
+            vehicleLinked: true,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byType(ClaimReadyBanner), findsNothing);
+    expect(find.byKey(const Key('review-missing-banner')), findsOneWidget);
+    expect(find.text('This claim is not ready yet'), findsOneWidget);
+    expect(
+      find.text('Still needed: Accident and Signature'),
+      findsOneWidget,
+    );
+
+    // Submitting is blocked, because the backend would reject it.
+    final submit = tester.widget<AppPrimaryButton>(
+      find.byType(AppPrimaryButton),
+    );
+    expect(submit.onPressed, isNull);
+  });
+
+  testWidgets('a single missing section reads without a conjunction', (
+    tester,
+  ) async {
+    await pumpScreen(
+      tester,
+      ClaimReviewScreen(
+        args: ClaimReviewArgs(
+          claimId: '6a91ab09c9ff1dc54fabf15b',
+          summary: ClaimReviewSummary(
+            claimId: readySummary().claimId,
+            claimNumber: readySummary().claimNumber,
+            licensePlate: readySummary().licensePlate,
+            accidentType: readySummary().accidentType,
+            locationAddress: readySummary().locationAddress,
+            evidenceCount: 1,
+            vehicleLinked: true,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Still needed: Signature'), findsOneWidget);
+  });
+
+  testWidgets('the sections read from the claim, never from placeholders', (
+    tester,
+  ) async {
+    // A claim where the backend holds nothing yet: every section says
+    // so explicitly rather than showing an invented value.
+    await pumpScreen(
+      tester,
+      ClaimReviewScreen(
+        args: const ClaimReviewArgs(
+          claimId: '6a91ab09c9ff1dc54fabf15b',
+          summary: ClaimReviewSummary(
+            claimId: '6a91ab09c9ff1dc54fabf15b',
+            claimNumber: 'CLM-0001',
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      find.text('Accident details not recorded yet.', skipOffstage: false),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Location not captured yet.', skipOffstage: false),
+      findsOneWidget,
+    );
+    expect(
+      find.text('No evidence photos uploaded yet.', skipOffstage: false),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Customer signature not captured yet.', skipOffstage: false),
+      findsOneWidget,
+    );
+    // Nothing was uploaded, so no media frames are drawn at all.
+    expect(
+      find.byKey(const Key('review-evidence-thumbnails')),
+      findsNothing,
+    );
+    expect(find.byKey(const Key('review-signature-preview')), findsNothing);
+  });
 }

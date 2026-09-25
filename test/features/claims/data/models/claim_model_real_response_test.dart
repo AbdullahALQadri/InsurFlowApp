@@ -125,6 +125,22 @@ void main() {
       expect(claim.signature!.hasImage, isTrue);
       expect(claim.signature!.capturedAt, isNotNull);
 
+      // Verified live against a claim taken through the whole flow:
+      // `capturedBy` is a bare id string here, not the {id, name}
+      // object the assignment fields use, and the detail read omits
+      // the `publicId` that the upload response carries.
+      final signature = ClaimModel.fromJson({
+        'id': 'c1',
+        'signature': {
+          'url': 'https://res.cloudinary.com/x/signatures/abc.png',
+          'capturedBy': '6ab558c8a170b120d93a5f96',
+          'capturedAt': '2026-09-25T14:33:53.299Z',
+        },
+      }, detailed: true).entity.signature;
+      expect(signature!.hasImage, isTrue);
+      expect(signature.capturedBy?.id, '6ab558c8a170b120d93a5f96');
+      expect(signature.capturedAt, isNotNull);
+
       // timeline[] audit trail
       expect(claim.timeline.length, greaterThan(1));
       expect(claim.timeline.first.action, isNotNull);

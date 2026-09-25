@@ -62,6 +62,12 @@ class _ClaimValidationScreenState extends State<ClaimValidationScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _timeline;
 
+  /// Guards against a second `POST /claims/{id}/inspection/submit`.
+  /// The confirmation sheet and the request are both awaited, and the
+  /// button stays live behind them, so without this a double tap would
+  /// submit the claim twice.
+  var _isSubmitting = false;
+
   @override
   void initState() {
     super.initState();
@@ -197,7 +203,8 @@ class _ClaimValidationScreenState extends State<ClaimValidationScreen>
                         key: const Key('validation-continue'),
                         label: strings.continueToSubmit,
                         prominent: true,
-                        onPressed: ready ? _continue : null,
+                        isLoading: _isSubmitting,
+                        onPressed: ready && !_isSubmitting ? _continue : null,
                       );
                     },
                   ),
@@ -215,6 +222,7 @@ class _ClaimValidationScreenState extends State<ClaimValidationScreen>
       widget.onContinue!(widget.args.claimId);
       return;
     }
+    if (_isSubmitting) return;
 
     final confirmed = await SubmitClaimConfirmationSheet.show(
       context,
@@ -226,6 +234,7 @@ class _ClaimValidationScreenState extends State<ClaimValidationScreen>
 
     final messenger = ScaffoldMessenger.of(context);
     final strings = AppStrings.of(context);
+    setState(() => _isSubmitting = true);
     messenger.showSnackBar(SnackBar(content: Text(strings.submittingClaim)));
 
     try {
@@ -235,6 +244,9 @@ class _ClaimValidationScreenState extends State<ClaimValidationScreen>
       if (!mounted) return;
       result.fold(
         (failure) {
+          // Releasing the guard only on failure: a success navigates
+          // away, and the claim must not be submitted a second time.
+          setState(() => _isSubmitting = false);
           messenger.hideCurrentSnackBar();
           messenger.showSnackBar(
             SnackBar(content: Text(strings.messageFor(failure))),
@@ -253,6 +265,7 @@ class _ClaimValidationScreenState extends State<ClaimValidationScreen>
       );
     } catch (_) {
       if (!mounted) return;
+      setState(() => _isSubmitting = false);
       messenger.hideCurrentSnackBar();
       messenger.showSnackBar(SnackBar(content: Text(strings.submitFailed)));
     }

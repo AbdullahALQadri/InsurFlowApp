@@ -21,6 +21,7 @@ import 'package:insurflow/features/claims/presentation/screens/location_permissi
 import 'package:insurflow/features/claims/presentation/screens/vehicle_evidence_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/vehicle_identification_screen.dart';
 import 'package:insurflow/features/claims/presentation/utils/claim_date_formatter.dart';
+import 'package:insurflow/features/claims/presentation/widgets/claim_missing_banner.dart';
 import 'package:insurflow/features/claims/presentation/widgets/claim_ready_banner.dart';
 import 'package:insurflow/features/claims/presentation/widgets/claim_review_section_card.dart';
 import 'package:insurflow/features/claims/presentation/widgets/inspection_step_track.dart';
@@ -144,6 +145,11 @@ class _ReviewLoader extends StatelessWidget {
           summary: ClaimReviewSummary.fromClaim(claim),
           onEdit: onEdit,
           onSubmit: onSubmit,
+          // Re-reads GET /claims/{id} after an edit, so a step the
+          // adjuster just saved is not still reported as missing.
+          onRefresh: () => context.read<ClaimDetailsBloc>().add(
+            ClaimDetailsRequested(claimId),
+          ),
         );
       },
     );
@@ -151,11 +157,20 @@ class _ReviewLoader extends StatelessWidget {
 }
 
 class _ReviewScaffold extends StatelessWidget {
-  const _ReviewScaffold({required this.summary, this.onEdit, this.onSubmit});
+  const _ReviewScaffold({
+    required this.summary,
+    this.onEdit,
+    this.onSubmit,
+    this.onRefresh,
+  });
 
   final ClaimReviewSummary summary;
   final ValueChanged<ClaimReviewSectionId>? onEdit;
   final ValueChanged<ClaimReviewSummary>? onSubmit;
+
+  /// Called after an edit screen closes. Null when the caller supplied
+  /// a fixed summary and there is nothing to re-read.
+  final VoidCallback? onRefresh;
 
   @override
   Widget build(BuildContext context) {
@@ -237,7 +252,7 @@ class _ReviewScaffold extends StatelessWidget {
                         for (final section in ClaimReviewSectionId.values) ...[
                           ClaimReviewSectionCard(
                             key: Key('review-card-${section.name}'),
-                            title: _title(strings, section),
+                            title: strings.reviewSectionLabel(section),
                             checks: _checks(strings, summary, section),
                             editKey: Key('review-edit-${section.name}'),
                             media: _media(context, summary, section),
@@ -259,8 +274,14 @@ class _ReviewScaffold extends StatelessWidget {
                   padding: context.spaceSymmetric(vertical: 12, horizontal: 20),
                   child: Column(
                     children: [
-                      if (summary.isReady) const ClaimReadyBanner(),
-                      if (summary.isReady) context.addVerticalSpace(12),
+                      if (summary.isReady)
+                        const ClaimReadyBanner()
+                      else
+                        ClaimMissingBanner(
+                          key: const Key('review-missing-banner'),
+                          sections: summary.missingSections,
+                        ),
+                      context.addVerticalSpace(12),
                       AppPrimaryButton(
                         key: const Key('review-submit'),
                         label: strings.submitClaim,
@@ -278,25 +299,6 @@ class _ReviewScaffold extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _title(AppStrings strings, ClaimReviewSectionId section) {
-    switch (section) {
-      case ClaimReviewSectionId.vehicle:
-        return strings.vehicleSection;
-      case ClaimReviewSectionId.customer:
-        return strings.customerSection;
-      case ClaimReviewSectionId.policy:
-        return strings.policySection;
-      case ClaimReviewSectionId.accident:
-        return strings.inspectionStepLabel(InspectionStepId.accident);
-      case ClaimReviewSectionId.location:
-        return strings.inspectionStepLabel(InspectionStepId.location);
-      case ClaimReviewSectionId.evidence:
-        return strings.inspectionStepLabel(InspectionStepId.evidence);
-      case ClaimReviewSectionId.signature:
-        return strings.inspectionStepLabel(InspectionStepId.signature);
-    }
   }
 
   /// Each line is a value the backend actually holds. A section with no
@@ -428,16 +430,22 @@ class _ReviewScaffold extends StatelessWidget {
         : ClaimDateFormatter.dayMonthYear(strings, parsed);
   }
 
-  void _edit(
+  /// Opens the step's own screen and re-reads the claim when it closes.
+  ///
+  /// The edit screens write straight to the backend, so without the
+  /// re-read the review would keep showing the snapshot it loaded on
+  /// entry — reporting a step as missing right after it was saved.
+  Future<void> _edit(
     BuildContext context,
     ClaimReviewSummary summary,
     ClaimReviewSectionId section,
-  ) {
+  ) async {
     if (onEdit != null) {
       onEdit!(section);
       return;
     }
 
+    final claimId = summary.claimId;
     switch (section) {
       case ClaimReviewSectionId.vehicle:
       case ClaimReviewSectionId.customer:
@@ -445,16 +453,19 @@ class _ReviewScaffold extends StatelessWidget {
         // Vehicle, customer and policy are all written by the single
         // `PUT /claims/{id}/vehicle` call, so editing any of them means
         // re-running the plate capture and lookup.
-        VehicleIdentificationScreen.open(context, claimId: summary.claimId);
+        await VehicleIdentificationScreen.open(context, claimId: claimId);
       case ClaimReviewSectionId.accident:
-        AccidentDetailsScreen.open(context, claimId: summary.claimId);
+        await AccidentDetailsScreen.open(context, claimId: claimId);
       case ClaimReviewSectionId.location:
-        LocationPermissionScreen.open(context, claimId: summary.claimId);
+        await LocationPermissionScreen.open(context, claimId: claimId);
       case ClaimReviewSectionId.evidence:
-        VehicleEvidenceScreen.open(context, claimId: summary.claimId);
+        await VehicleEvidenceScreen.open(context, claimId: claimId);
       case ClaimReviewSectionId.signature:
-        CustomerSignatureScreen.open(context, claimId: summary.claimId);
+        await CustomerSignatureScreen.open(context, claimId: claimId);
     }
+
+    if (!context.mounted) return;
+    onRefresh?.call();
   }
 
   void _submit(BuildContext context, ClaimReviewSummary summary) {
