@@ -17,6 +17,7 @@ import 'package:insurflow/features/claims/data/datasources/claims_remote_data_so
 import 'package:insurflow/features/claims/data/repositories/claims_repository_impl.dart';
 import 'package:insurflow/features/claims/domain/repositories/claims_repository.dart';
 import 'package:insurflow/features/claims/domain/usecases/accept_assignment.dart';
+import 'package:insurflow/features/claims/domain/usecases/decline_assignment.dart';
 import 'package:insurflow/features/claims/domain/usecases/get_claim_details.dart';
 import 'package:insurflow/features/claims/domain/usecases/get_my_claims.dart';
 import 'package:insurflow/features/claims/domain/usecases/lookup_vehicle.dart';
@@ -26,6 +27,7 @@ import 'package:insurflow/features/claims/presentation/bloc/claim_details_bloc.d
 import 'package:insurflow/features/claims/presentation/cubit/accident_location_cubit.dart';
 import 'package:insurflow/features/claims/presentation/bloc/claims_bloc.dart';
 
+import 'package:insurflow/core/services/adjuster_position_store.dart';
 import 'package:insurflow/core/services/device_location_service.dart';
 import 'package:insurflow/core/services/location_tracking_service.dart';
 import 'package:insurflow/core/services/push_notification_service.dart';
@@ -54,6 +56,7 @@ class AppDependencies {
     required this.getMyClaimsUseCase,
     required this.getClaimDetailsUseCase,
     required this.acceptAssignmentUseCase,
+    required this.declineAssignmentUseCase,
     required this.startClaimUseCase,
     required this.submitClaimUseCase,
     required this.lookupVehicleUseCase,
@@ -65,6 +68,7 @@ class AppDependencies {
     required this.getAdjusterStatsUseCase,
     required this.locationTrackingService,
     required this.deviceLocationService,
+    required this.adjusterPositionStore,
     required this.notificationsRepository,
     required this.registerDeviceTokenUseCase,
     required this.pushNotificationService,
@@ -82,6 +86,7 @@ class AppDependencies {
   final GetMyClaimsUseCase getMyClaimsUseCase;
   final GetClaimDetailsUseCase getClaimDetailsUseCase;
   final AcceptAssignmentUseCase acceptAssignmentUseCase;
+  final DeclineAssignmentUseCase declineAssignmentUseCase;
   final StartClaimUseCase startClaimUseCase;
   final SubmitClaimUseCase submitClaimUseCase;
   final LookupVehicleUseCase lookupVehicleUseCase;
@@ -93,6 +98,9 @@ class AppDependencies {
   final GetAdjusterStatsUseCase getAdjusterStatsUseCase;
   final LocationTrackingService locationTrackingService;
   final DeviceLocationService deviceLocationService;
+
+  /// The adjuster's latest fix, attached to requests as headers.
+  final AdjusterPositionStore adjusterPositionStore;
   final NotificationsRepository notificationsRepository;
   final RegisterDeviceTokenUseCase registerDeviceTokenUseCase;
   final PushNotificationService pushNotificationService;
@@ -117,7 +125,12 @@ class AppDependencies {
     AppPreferencesStore? preferencesStore,
   }) {
     final store = tokenStore ?? SecureTokenStore();
-    final dio = DioFactory.create(tokenStore: store);
+    final positionStore = AdjusterPositionStore();
+    final dio = DioFactory.create(
+      tokenStore: store,
+      positionStore: positionStore,
+    );
+    const deviceLocationService = GeolocatorLocationService();
     final authRepository = AuthRepositoryImpl(
       remoteDataSource: AuthRemoteDataSourceImpl(dio),
       localDataSource: AuthLocalDataSourceImpl(store),
@@ -126,8 +139,11 @@ class AppDependencies {
       ClaimsRemoteDataSourceImpl(dio),
     );
     final updateClaimLocation = UpdateClaimLocationUseCase(claimsRepository);
+    // Refreshes the adjuster's position for the X-Latitude /
+    // X-Longitude headers. It issues no request of its own.
     final trackingService = LocationTrackingService(
-      updateClaimLocationUseCase: updateClaimLocation,
+      locationService: deviceLocationService,
+      positionStore: positionStore,
     );
     final notificationsRepository = NotificationsRepositoryImpl(
       NotificationsRemoteDataSourceImpl(dio),
@@ -147,6 +163,7 @@ class AppDependencies {
       getMyClaimsUseCase: GetMyClaimsUseCase(claimsRepository),
       getClaimDetailsUseCase: GetClaimDetailsUseCase(claimsRepository),
       acceptAssignmentUseCase: AcceptAssignmentUseCase(claimsRepository),
+      declineAssignmentUseCase: DeclineAssignmentUseCase(claimsRepository),
       startClaimUseCase: StartClaimUseCase(claimsRepository),
       submitClaimUseCase: SubmitClaimUseCase(claimsRepository),
       lookupVehicleUseCase: LookupVehicleUseCase(claimsRepository),
@@ -157,7 +174,8 @@ class AppDependencies {
       uploadClaimSignatureUseCase: UploadClaimSignatureUseCase(claimsRepository),
       getAdjusterStatsUseCase: GetAdjusterStatsUseCase(claimsRepository),
       locationTrackingService: trackingService,
-      deviceLocationService: const GeolocatorLocationService(),
+      deviceLocationService: deviceLocationService,
+      adjusterPositionStore: positionStore,
       notificationsRepository: notificationsRepository,
       registerDeviceTokenUseCase: registerDeviceToken,
       pushNotificationService: PushNotificationService(
@@ -176,6 +194,8 @@ class AppDependencies {
       loginUseCase: loginUseCase,
       logoutUseCase: logoutUseCase,
       restoreSessionUseCase: restoreSessionUseCase,
+      locationTrackingService: locationTrackingService,
+      adjusterPositionStore: adjusterPositionStore,
     );
   }
 
@@ -188,6 +208,7 @@ class AppDependencies {
       getClaimDetailsUseCase: getClaimDetailsUseCase,
       startClaimUseCase: startClaimUseCase,
       acceptAssignmentUseCase: acceptAssignmentUseCase,
+      declineAssignmentUseCase: declineAssignmentUseCase,
     );
   }
 

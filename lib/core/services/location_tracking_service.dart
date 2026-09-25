@@ -1,108 +1,116 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
-import 'package:insurflow/features/claims/domain/usecases/update_claim_location.dart';
 
+import 'package:insurflow/core/error/failures.dart';
+import 'package:insurflow/core/services/adjuster_position_store.dart';
+import 'package:insurflow/core/services/device_location_service.dart';
+
+/// What the device's location subsystem is currently doing.
+///
+/// The copy for each value lives in `AppStrings`, not here: this is a
+/// service, and a service should not decide how anything reads.
 enum GpsStatus {
   active,
   weakGps,
   disabled,
   permissionDenied,
-  waitingConnection;
-
-  String get label {
-    switch (this) {
-      case GpsStatus.active:
-        return 'Active';
-      case GpsStatus.weakGps:
-        return 'Weak GPS';
-      case GpsStatus.disabled:
-        return 'Location Disabled';
-      case GpsStatus.permissionDenied:
-        return 'Permission Denied';
-      case GpsStatus.waitingConnection:
-        return 'Waiting Connection';
-    }
-  }
-
-  String labelAr(bool isArabic) {
-    if (!isArabic) return label;
-    switch (this) {
-      case GpsStatus.active:
-        return 'الموقع نشط';
-      case GpsStatus.weakGps:
-        return 'تغطية ضعيفة';
-      case GpsStatus.disabled:
-        return 'الموقع معطل';
-      case GpsStatus.permissionDenied:
-        return 'الصلاحية مرفوضة';
-      case GpsStatus.waitingConnection:
-        return 'في انتظار الاتصال';
-    }
-  }
+  waitingConnection,
 }
 
-/// Periodic claim-location reporter.
+/// Keeps the adjuster's current position fresh for request headers.
 ///
-/// TODO(gps): No device location plugin is installed yet. This service
-/// must NOT transmit fabricated coordinates to PUT /claims/{id}/location,
-/// so transmissions are paused until a real GPS source is wired through
-/// [UpdateClaimLocationUseCase]. Do not invent a position or address.
+/// The backend takes the adjuster's position from `X-Latitude` /
+/// `X-Longitude` on ordinary requests, so this service never issues a
+/// request of its own — it refreshes [AdjusterPositionStore] and
+/// reports an honest [GpsStatus]. A fix is only recorded when the
+/// device produces one; a failure clears nothing and invents nothing,
+/// it just changes the status.
 class LocationTrackingService {
   LocationTrackingService({
-    UpdateClaimLocationUseCase? updateClaimLocationUseCase,
-  }) : _updateClaimLocationUseCase = updateClaimLocationUseCase;
+    required DeviceLocationService locationService,
+    required AdjusterPositionStore positionStore,
+    Duration interval = const Duration(minutes: 2),
+  }) : _locationService = locationService,
+       _positionStore = positionStore,
+       _interval = interval;
 
-  final UpdateClaimLocationUseCase? _updateClaimLocationUseCase;
+  final DeviceLocationService _locationService;
+  final AdjusterPositionStore _positionStore;
+  final Duration _interval;
 
   final _statusController = StreamController<GpsStatus>.broadcast();
   final _lastUpdateController = StreamController<DateTime>.broadcast();
 
-  GpsStatus _currentStatus = GpsStatus.disabled;
+  /// Nothing has been attempted yet, so the honest answer is that the
+  /// app is still waiting — not that GPS is off.
+  GpsStatus _currentStatus = GpsStatus.waitingConnection;
   DateTime? _lastUpdatedTime;
-  String? _activeClaimId;
   Timer? _pollingTimer;
+  var _isRefreshing = false;
 
   GpsStatus get currentStatus => _currentStatus;
   DateTime? get lastUpdatedTime => _lastUpdatedTime;
   Stream<GpsStatus> get statusStream => _statusController.stream;
   Stream<DateTime> get lastUpdateStream => _lastUpdateController.stream;
 
-  void startTracking({required String claimId}) {
-    _activeClaimId = claimId;
-    // No location source yet — report the honest state instead of a
-    // simulated "Active" GPS fix.
-    _currentStatus = GpsStatus.disabled;
-    _statusController.add(_currentStatus);
-
+  /// Begins refreshing the position. Safe to call more than once; the
+  /// previous timer is replaced rather than stacked.
+  void start() {
     _pollingTimer?.cancel();
-    _pollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
-      _transmitLocationUpdate();
-    });
-
-    _transmitLocationUpdate();
+    _pollingTimer = Timer.periodic(_interval, (_) => refresh());
+    refresh();
   }
 
-  void stopTracking() {
+  void stop() {
     _pollingTimer?.cancel();
     _pollingTimer = null;
-    _activeClaimId = null;
   }
 
-  Future<void> _transmitLocationUpdate() async {
-    if (_activeClaimId == null || _updateClaimLocationUseCase == null) return;
-
-    // TODO(gps): Capture a real device fix first, then send it here:
-    // await _updateClaimLocationUseCase!(
-    //   claimId: _activeClaimId!,
-    //   latitude: fix.latitude,
-    //   longitude: fix.longitude,
-    //   address: resolvedAddress,
-    //   capturedAt: fix.time,
-    // );
-    // Never send hardcoded or simulated coordinates to the backend.
-    _currentStatus = GpsStatus.disabled;
-    _statusController.add(_currentStatus);
+  /// Takes one fix now. Overlapping calls are ignored, since a fix can
+  /// take longer than the polling interval on a weak signal.
+  Future<void> refresh() async {
+    if (_isRefreshing) return;
+    _isRefreshing = true;
+    try {
+      final result = await _locationService.currentLocation();
+      result.fold(_onFailure, _onFix);
+    } finally {
+      _isRefreshing = false;
+    }
   }
+
+  void _onFix(DeviceLocation fix) {
+    _positionStore.record(fix);
+    _lastUpdatedTime = fix.capturedAt;
+    if (!_lastUpdateController.isClosed) {
+      _lastUpdateController.add(fix.capturedAt);
+    }
+    // `accuracy` is metres of horizontal error, so a large number is a
+    // poor fix. It is still recorded — a rough position beats none.
+    final accuracy = fix.accuracy;
+    _emit(
+      accuracy != null && accuracy > _weakAccuracyMetres
+          ? GpsStatus.weakGps
+          : GpsStatus.active,
+    );
+  }
+
+  void _onFailure(Failure failure) {
+    _emit(switch (failure) {
+      LocationServiceDisabledFailure() => GpsStatus.disabled,
+      LocationPermissionDeniedFailure() => GpsStatus.permissionDenied,
+      LocationPermissionDeniedForeverFailure() => GpsStatus.permissionDenied,
+      _ => GpsStatus.waitingConnection,
+    });
+  }
+
+  void _emit(GpsStatus status) {
+    _currentStatus = status;
+    if (!_statusController.isClosed) _statusController.add(status);
+  }
+
+  /// Above this many metres of error the fix is worth showing but not
+  /// worth calling a good one.
+  static const _weakAccuracyMetres = 100.0;
 
   void dispose() {
     _pollingTimer?.cancel();

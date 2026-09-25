@@ -22,8 +22,6 @@ class Routes {
   static const String evidenceCameraScreen = '/evidenceCameraScreen';
   static const String evidencePhotoPreviewScreen =
       '/evidencePhotoPreviewScreen';
-  static const String claimDocumentsScreen = '/claimDocumentsScreen';
-  static const String documentPreviewScreen = '/documentPreviewScreen';
   static const String customerSignatureScreen = '/customerSignatureScreen';
   static const String claimReviewScreen = '/claimReviewScreen';
   static const String claimValidationScreen = '/claimValidationScreen';

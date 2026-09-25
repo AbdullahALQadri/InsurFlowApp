@@ -1,9 +1,7 @@
 /// Required vehicle photo checklist for a field inspection.
 ///
-/// TODO(api): `POST /claims/{id}/evidence` exists in the Postman
-/// collection (see UploadClaimEvidenceUseCase in DI). The captured
-/// checklist is still local — wire it to the real endpoint in the API
-/// integration prompt. Do not invent upload routes or response fields.
+/// Each slot is uploaded individually through
+/// `POST /claims/{id}/evidence` as multipart `file` + `imageType`.
 enum EvidenceCategory {
   licensePlate,
   front,
@@ -12,6 +10,39 @@ enum EvidenceCategory {
   rightSide,
   damageCloseUp,
   accidentScene,
+}
+
+extension EvidenceCategoryApi on EvidenceCategory {
+  /// The `imageType` this slot is uploaded as.
+  ///
+  /// The backend accepts exactly six values — VEHICLE_FRONT,
+  /// VEHICLE_REAR, VEHICLE_SIDE, DAMAGE_CLOSEUP, DRIVER_LICENSE and
+  /// OTHER — and the app's checklist is finer grained than that, so two
+  /// mappings are deliberately lossy:
+  ///
+  /// * left and right side both upload as VEHICLE_SIDE, because the
+  ///   backend draws no left/right distinction;
+  /// * the plate shot and the wide scene shot both upload as OTHER,
+  ///   since neither is a driver licence and no closer value exists.
+  ///
+  /// The checklist still tracks them separately on the device, so the
+  /// adjuster is still prompted for each one.
+  String get apiValue {
+    switch (this) {
+      case EvidenceCategory.front:
+        return 'VEHICLE_FRONT';
+      case EvidenceCategory.rear:
+        return 'VEHICLE_REAR';
+      case EvidenceCategory.leftSide:
+      case EvidenceCategory.rightSide:
+        return 'VEHICLE_SIDE';
+      case EvidenceCategory.damageCloseUp:
+        return 'DAMAGE_CLOSEUP';
+      case EvidenceCategory.licensePlate:
+      case EvidenceCategory.accidentScene:
+        return 'OTHER';
+    }
+  }
 }
 
 enum EvidenceCaptureStatus { incomplete, completed }

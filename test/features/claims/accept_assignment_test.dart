@@ -16,6 +16,7 @@ import 'package:insurflow/features/claims/domain/claim_status.dart';
 import 'package:insurflow/features/claims/domain/entities/claim.dart';
 import 'package:insurflow/features/claims/domain/repositories/claims_repository.dart';
 import 'package:insurflow/features/claims/domain/usecases/accept_assignment.dart';
+import 'package:insurflow/features/claims/domain/usecases/decline_assignment.dart';
 import 'package:insurflow/features/claims/domain/usecases/get_claim_details.dart';
 import 'package:insurflow/features/claims/domain/usecases/start_claim.dart';
 import 'package:insurflow/features/claims/presentation/bloc/claim_details_bloc.dart';
@@ -73,12 +74,19 @@ class _MockStartClaim extends Mock implements StartClaimUseCase {}
 
 class _MockAccept extends Mock implements AcceptAssignmentUseCase {}
 
+class _MockDecline extends Mock implements DeclineAssignmentUseCase {}
+
+class _FakeDeclineParams extends Fake implements DeclineAssignmentParams {}
+
 class _MockRepository extends Mock implements ClaimsRepository {}
 
 class _FakeClaim extends Fake implements Claim {}
 
 void main() {
-  setUpAll(() => registerFallbackValue(_FakeClaim()));
+  setUpAll(() {
+    registerFallbackValue(_FakeClaim());
+    registerFallbackValue(_FakeDeclineParams());
+  });
 
   group('status', () {
     test('only PENDING_ACCEPTANCE awaits acceptance', () {
@@ -150,6 +158,26 @@ void main() {
           ClaimStatus.assigned);
     });
 
+    test('POSTs decline-assignment with the reason, then re-reads', () async {
+      const reason = 'Outside my current operational sector or vehicle issue';
+      await ClaimsRemoteDataSourceImpl(
+        dio,
+      ).declineAssignment('6ab4f9b766ac53c14dd40da1', reason);
+
+      expect(requests.length, 2);
+      expect(requests.first.method, 'POST');
+      expect(
+        requests.first.path,
+        '/claims/6ab4f9b766ac53c14dd40da1/decline-assignment',
+      );
+      // The backend answers 400 "Reason is required" without this.
+      expect(requests.first.data, {'reason': reason});
+
+      // The claim has left this adjuster, so it is re-read.
+      expect(requests[1].method, 'GET');
+      expect(requests[1].path, '/claims/6ab4f9b766ac53c14dd40da1');
+    });
+
     test('a 409 from the backend surfaces as a validation failure', () async {
       final failing = Dio(BaseOptions(baseUrl: 'https://example.test/api/v1'))
         ..httpClientAdapter = _ConflictAdapter();
@@ -192,21 +220,72 @@ void main() {
     });
   });
 
+  group('decline use case', () {
+    test('an empty reason never reaches the API', () async {
+      final repository = _MockRepository();
+      final result = await DeclineAssignmentUseCase(repository)(
+        DeclineAssignmentParams(claim: pendingClaim(), reason: '   '),
+      );
+
+      expect(result.isLeft(), isTrue);
+      verifyNever(() => repository.declineAssignment(any(), any()));
+    });
+
+    test('a claim that is not pending never reaches the API', () async {
+      final repository = _MockRepository();
+      final result = await DeclineAssignmentUseCase(repository)(
+        const DeclineAssignmentParams(
+          claim: Claim(id: 'c1', status: ClaimStatus.assigned),
+          reason: 'Vehicle issue',
+        ),
+      );
+
+      expect(result.isLeft(), isTrue);
+      verifyNever(() => repository.declineAssignment(any(), any()));
+    });
+
+    test('the reason is trimmed before it is sent', () async {
+      final repository = _MockRepository();
+      when(() => repository.declineAssignment(any(), any())).thenAnswer(
+        (_) async => const Right(Claim(id: 'c1', status: ClaimStatus.newClaim)),
+      );
+
+      await DeclineAssignmentUseCase(repository)(
+        DeclineAssignmentParams(
+          claim: pendingClaim(),
+          reason: '  Vehicle issue  ',
+        ),
+      );
+
+      verify(
+        () => repository.declineAssignment(
+          '6ab4f9b766ac53c14dd40da1',
+          'Vehicle issue',
+        ),
+      ).called(1);
+    });
+  });
+
   group('bloc', () {
+    const reason = 'Outside my current operational sector or vehicle issue';
+
     late _MockGetClaimDetails getDetails;
     late _MockStartClaim startClaim;
     late _MockAccept accept;
+    late _MockDecline decline;
 
     setUp(() {
       getDetails = _MockGetClaimDetails();
       startClaim = _MockStartClaim();
       accept = _MockAccept();
+      decline = _MockDecline();
     });
 
     ClaimDetailsBloc build() => ClaimDetailsBloc(
       getClaimDetailsUseCase: getDetails,
       startClaimUseCase: startClaim,
       acceptAssignmentUseCase: accept,
+      declineAssignmentUseCase: decline,
     );
 
     blocTest<ClaimDetailsBloc, ClaimDetailsState>(
@@ -297,6 +376,69 @@ void main() {
       act: (bloc) => bloc.add(const ClaimAcceptancePrompted()),
       expect: () => <ClaimDetailsState>[],
     );
+
+    blocTest<ClaimDetailsBloc, ClaimDetailsState>(
+      'declining sends the reason and takes the returned claim',
+      build: () {
+        when(() => decline(any())).thenAnswer(
+          (_) async => const Right(
+            Claim(id: '6ab4f9b766ac53c14dd40da1', status: ClaimStatus.newClaim),
+          ),
+        );
+        return build();
+      },
+      seed: () => ClaimDetailsLoadSuccess(pendingClaim()),
+      act: (bloc) => bloc.add(const ClaimAssignmentDeclineRequested(reason)),
+      expect: () => [
+        isA<ClaimDetailsLoadSuccess>()
+            .having((s) => s.isAcceptingAssignment, 'in flight', isTrue),
+        isA<ClaimDetailsLoadSuccess>()
+            .having((s) => s.isAcceptingAssignment, 'in flight', isFalse)
+            .having((s) => s.acceptFailure, 'failure', isNull)
+            .having((s) => s.hasPromptedAcceptance, 'prompted', isTrue),
+      ],
+      verify: (_) {
+        final params = verify(() => decline(captureAny())).captured.single
+            as DeclineAssignmentParams;
+        expect(params.reason, reason);
+        expect(params.claim.id, '6ab4f9b766ac53c14dd40da1');
+      },
+    );
+
+    blocTest<ClaimDetailsBloc, ClaimDetailsState>(
+      'a declined claim that fails keeps the claim and reports it',
+      build: () {
+        when(
+          () => decline(any()),
+        ).thenAnswer((_) async => const Left(NetworkFailure()));
+        return build();
+      },
+      seed: () => ClaimDetailsLoadSuccess(pendingClaim()),
+      act: (bloc) => bloc.add(const ClaimAssignmentDeclineRequested(reason)),
+      expect: () => [
+        isA<ClaimDetailsLoadSuccess>()
+            .having((s) => s.isAcceptingAssignment, 'in flight', isTrue),
+        isA<ClaimDetailsLoadSuccess>()
+            .having((s) => s.acceptFailure, 'failure', isA<NetworkFailure>())
+            .having(
+              (s) => s.claim.status,
+              'status',
+              ClaimStatus.pendingAcceptance,
+            ),
+      ],
+    );
+
+    blocTest<ClaimDetailsBloc, ClaimDetailsState>(
+      'a claim that is not pending is never declined',
+      build: build,
+      seed: () => const ClaimDetailsLoadSuccess(
+        Claim(id: 'c1', status: ClaimStatus.assigned),
+      ),
+      act: (bloc) => bloc.add(const ClaimAssignmentDeclineRequested(reason)),
+      expect: () => <ClaimDetailsState>[],
+      verify: (_) => verifyNever(() => decline(any())),
+    );
+
   });
 
   group('dialog', () {

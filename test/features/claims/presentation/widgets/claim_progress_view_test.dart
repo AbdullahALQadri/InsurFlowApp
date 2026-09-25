@@ -44,13 +44,12 @@ void main() {
       find.text('Start with vehicle identification to continue.'),
       findsOneWidget,
     );
-    expect(find.text('0 of 8 completed'), findsOneWidget);
+    expect(find.text('0 of 7 completed'), findsOneWidget);
 
     expect(find.text('Vehicle'), findsOneWidget);
     expect(find.text('Accident'), findsOneWidget);
     expect(find.text('Location'), findsOneWidget);
     expect(find.text('Evidence'), findsOneWidget);
-    expect(find.text('Documents'), findsOneWidget);
     expect(find.text('Signature'), findsOneWidget);
     expect(find.text('Review'), findsOneWidget);
     expect(find.text('Submission'), findsOneWidget);

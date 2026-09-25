@@ -10,6 +10,11 @@ abstract class ClaimsRepository {
 
   Future<Either<Failure, Claim>> acceptAssignment(String claimId);
 
+  Future<Either<Failure, Claim>> declineAssignment(
+    String claimId,
+    String reason,
+  );
+
   Future<Either<Failure, Claim>> startClaim(String claimId);
 
   Future<Either<Failure, Claim>> submitClaim(String claimId);

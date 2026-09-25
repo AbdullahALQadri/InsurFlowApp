@@ -5,6 +5,7 @@ import 'package:insurflow/core/error/failures.dart';
 import 'package:insurflow/features/claims/domain/claim_status.dart';
 import 'package:insurflow/features/claims/domain/entities/claim.dart';
 import 'package:insurflow/features/claims/domain/usecases/accept_assignment.dart';
+import 'package:insurflow/features/claims/domain/usecases/decline_assignment.dart';
 import 'package:insurflow/features/claims/domain/usecases/get_claim_details.dart';
 import 'package:insurflow/features/claims/domain/usecases/start_claim.dart';
 import 'package:insurflow/features/claims/presentation/bloc/claim_details_bloc.dart';
@@ -20,21 +21,29 @@ class _MockStartClaimUseCase extends Mock implements StartClaimUseCase {}
 class _MockAcceptAssignmentUseCase extends Mock
     implements AcceptAssignmentUseCase {}
 
+class _MockDeclineAssignmentUseCase extends Mock
+    implements DeclineAssignmentUseCase {}
+
 class _FakeClaim extends Fake implements Claim {}
+
+class _FakeDeclineParams extends Fake implements DeclineAssignmentParams {}
 
 void main() {
   late _MockGetClaimDetailsUseCase getClaimDetailsUseCase;
   late _MockStartClaimUseCase startClaimUseCase;
   late _MockAcceptAssignmentUseCase acceptAssignmentUseCase;
+  late _MockDeclineAssignmentUseCase declineAssignmentUseCase;
 
   setUpAll(() {
     registerFallbackValue(_FakeClaim());
+    registerFallbackValue(_FakeDeclineParams());
   });
 
   setUp(() {
     getClaimDetailsUseCase = _MockGetClaimDetailsUseCase();
     startClaimUseCase = _MockStartClaimUseCase();
     acceptAssignmentUseCase = _MockAcceptAssignmentUseCase();
+    declineAssignmentUseCase = _MockDeclineAssignmentUseCase();
   });
 
   ClaimDetailsBloc buildBloc() {
@@ -42,6 +51,7 @@ void main() {
       getClaimDetailsUseCase: getClaimDetailsUseCase,
       startClaimUseCase: startClaimUseCase,
       acceptAssignmentUseCase: acceptAssignmentUseCase,
+      declineAssignmentUseCase: declineAssignmentUseCase,
     );
   }
 

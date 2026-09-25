@@ -8,7 +8,7 @@ class InspectionProgressStore {
 
   static final InspectionProgressStore instance = InspectionProgressStore();
 
-  static const stepCount = 8;
+  static const stepCount = 7;
 
   final Map<String, int> _currentIndex = {};
 

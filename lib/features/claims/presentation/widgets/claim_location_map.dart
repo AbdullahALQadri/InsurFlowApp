@@ -61,12 +61,37 @@ class ClaimLocationMap extends StatefulWidget {
 }
 
 class _ClaimLocationMapState extends State<ClaimLocationMap> {
-  /// Tracks only whether the first frame of the map has been handed
-  /// over, so the placeholder can be removed. No controller is retained:
-  /// nothing here ever drives the camera, which is what guarantees the
-  /// user's pan and zoom are never reset. `GoogleMap` disposes its own
-  /// controller.
   var _isMapReady = false;
+
+  /// Retained so the camera can be moved when the coordinates change —
+  /// a refresh, or a different claim. `GoogleMap` owns the controller's
+  /// lifecycle and disposes it, so it is only held, never disposed here.
+  GoogleMapController? _controller;
+
+  @override
+  void didUpdateWidget(covariant ClaimLocationMap oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Only an actual coordinate change moves the camera. Ordinary
+    // rebuilds leave it exactly where the user panned it to.
+    final previous = oldWidget.point;
+    final next = widget.point;
+    if (previous.latitude == next.latitude &&
+        previous.longitude == next.longitude) {
+      return;
+    }
+    _moveTo(next);
+  }
+
+  void _moveTo(ClaimMapPoint point) {
+    _controller?.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: LatLng(point.latitude, point.longitude),
+          zoom: widget.zoom,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,10 +102,13 @@ class _ClaimLocationMapState extends State<ClaimLocationMap> {
     final point = widget.point;
 
     final map = GoogleMap(
-      // Rebuilding with a new key for new coordinates is what moves the
-      // camera to another claim; within one claim the platform view is
-      // kept, so the user's own pan and zoom survive every rebuild.
-      key: ValueKey('claim-map-${widget.markerId}-${point.mapKey}'),
+      // Keyed on the marker only, deliberately NOT on the coordinates.
+      // Keying on coordinates tore the platform view down and rebuilt
+      // it on every refresh, and the replacement could come back on a
+      // stale camera — the map showed the wrong place while the address
+      // beside it was right. One view is kept and the camera is
+      // animated instead (see didUpdateWidget).
+      key: ValueKey('claim-map-${widget.markerId}'),
       initialCameraPosition: CameraPosition(
         target: LatLng(point.latitude, point.longitude),
         zoom: widget.zoom,
@@ -99,9 +127,13 @@ class _ClaimLocationMapState extends State<ClaimLocationMap> {
           ),
         ),
       },
-      onMapCreated: (_) {
+      onMapCreated: (controller) {
+        _controller = controller;
         if (!mounted) return;
         setState(() => _isMapReady = true);
+        // The platform view can finish creating after the point has
+        // already changed, so settle it on the current coordinates.
+        _moveTo(widget.point);
       },
       zoomGesturesEnabled: widget.interactive,
       scrollGesturesEnabled: widget.interactive,

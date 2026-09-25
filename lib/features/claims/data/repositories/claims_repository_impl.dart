@@ -51,6 +51,20 @@ class ClaimsRepositoryImpl implements ClaimsRepository {
   }
 
   @override
+  Future<Either<Failure, Claim>> declineAssignment(
+    String claimId,
+    String reason,
+  ) async {
+    try {
+      return Right(await _remote.declineAssignment(claimId, reason));
+    } on DioException catch (error) {
+      return Left(FailureMapper.fromDio(error));
+    } catch (_) {
+      return const Left(UnexpectedFailure());
+    }
+  }
+
+  @override
   Future<Either<Failure, Claim>> startClaim(String claimId) async {
     try {
       return Right(await _remote.startClaim(claimId));

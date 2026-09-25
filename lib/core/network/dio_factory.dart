@@ -2,11 +2,15 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:insurflow/core/config/app_config.dart';
 import 'package:insurflow/core/network/token_store.dart';
+import 'package:insurflow/core/services/adjuster_position_store.dart';
 
 class DioFactory {
   DioFactory._();
 
-  static Dio create({required TokenStore tokenStore}) {
+  static Dio create({
+    required TokenStore tokenStore,
+    AdjusterPositionStore? positionStore,
+  }) {
     final dio = Dio(
       BaseOptions(
         baseUrl: AppConfig.apiBaseUrl,
@@ -29,6 +33,10 @@ class DioFactory {
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           }
+          // The backend reads the adjuster's current position off
+          // ordinary requests. The headers are omitted entirely until
+          // the device has produced a real fix.
+          options.headers.addAll(positionStore?.headers ?? const {});
           handler.next(options);
         },
       ),

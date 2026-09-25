@@ -23,6 +23,7 @@ import 'package:insurflow/features/claims/presentation/screens/vehicle_identific
 import 'package:insurflow/features/claims/presentation/utils/inspection_navigator.dart';
 import 'package:insurflow/core/error/failures.dart';
 import 'package:insurflow/features/claims/presentation/widgets/assignment_availability_dialog.dart';
+import 'package:insurflow/features/claims/presentation/widgets/decline_assignment_sheet.dart';
 
 class ClaimDetailsScreen extends StatelessWidget {
   const ClaimDetailsScreen({super.key, required this.claimId});
@@ -205,9 +206,19 @@ Future<void> _askAvailability(
     context,
     claimNumber: claimNumber,
   );
-  // Declining closes the dialog and calls nothing.
-  if (!accepted) return;
-  bloc.add(const ClaimAssignmentAcceptRequested());
+  if (!context.mounted) return;
+
+  if (accepted) {
+    bloc.add(const ClaimAssignmentAcceptRequested());
+    return;
+  }
+
+  // Declining asks for the reason the backend requires, then tells the
+  // officer so the claim can be reassigned. Backing out of the reason
+  // sheet leaves the claim untouched.
+  final reason = await DeclineAssignmentSheet.show(context);
+  if (reason == null || reason.trim().isEmpty) return;
+  bloc.add(ClaimAssignmentDeclineRequested(reason));
 }
 
 /// The backend answers 409 when the claim already moved on, which is a

@@ -8,11 +8,11 @@ import '../../../helpers/fixtures.dart';
 void main() {
   setUp(() => InspectionProgressStore.instance.reset());
 
-  test('field inspection starts at Vehicle with 0 of 8 complete', () {
+  test('field inspection starts at Vehicle with 0 of 7 complete', () {
     const progress = InspectionProgress.fieldInspectionStarted;
 
     expect(progress.completedCount, 0);
-    expect(InspectionProgress.totalCount, 8);
+    expect(InspectionProgress.totalCount, 7);
     expect(progress.currentStep, InspectionStepId.vehicle);
     expect(progress.lastCompletedStep, isNull);
     expect(
@@ -57,11 +57,11 @@ void main() {
     expect(progress.lastCompletedStep, InspectionStepId.accident);
   });
 
-  test('submitted claims show all 8 inspection steps complete', () {
+  test('submitted claims show all 7 inspection steps complete', () {
     final progress = InspectionProgress.forClaim(
       testClaim(status: ClaimStatus.submitted),
     );
-    expect(progress.completedCount, 8);
+    expect(progress.completedCount, 7);
     expect(progress.hasCurrent, isFalse);
   });
 

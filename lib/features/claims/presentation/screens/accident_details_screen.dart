@@ -18,6 +18,7 @@ import 'package:insurflow/features/claims/presentation/widgets/accident_type_gri
 import 'package:insurflow/features/claims/presentation/widgets/accident_validation_sheet.dart';
 import 'package:insurflow/features/claims/presentation/widgets/field_work_input.dart';
 import 'package:insurflow/features/claims/presentation/widgets/inspection_step_track.dart';
+import 'package:insurflow/core/di/app_dependencies.dart';
 
 class AccidentDetailsArgs {
   const AccidentDetailsArgs({required this.claimId});
@@ -69,6 +70,7 @@ class _AccidentDetailsScreenState extends State<AccidentDetailsScreen> {
   DateTime? _date;
   TimeOfDay? _time;
   var _attention = <AccidentField>{};
+  var _isSaving = false;
 
   @override
   void initState() {
@@ -203,14 +205,7 @@ class _AccidentDetailsScreenState extends State<AccidentDetailsScreen> {
         widget.onContinue!(_draft);
         return;
       }
-      InspectionProgress.complete(
-        widget.args.claimId,
-        InspectionStepId.accident,
-      );
-      await LocationPermissionScreen.open(
-        context,
-        claimId: widget.args.claimId,
-      );
+      await _saveAndContinue();
       return;
     }
 
@@ -226,6 +221,61 @@ class _AccidentDetailsScreenState extends State<AccidentDetailsScreen> {
     await _scrollTo(target);
     _focusFor(target)?.requestFocus();
   }
+
+  /// Persists the accident details, then moves to the location step.
+  ///
+  /// `PUT /claims/{id}/accident` requires all five fields; the form has
+  /// already validated them, and the date/time are formatted to the
+  /// `YYYY-MM-DD` and `HH:mm` the backend expects.
+  Future<void> _saveAndContinue() async {
+    final draft = _draft;
+    final date = draft.occurredOn;
+    if (draft.type == null || date == null || draft.hour == null ||
+        draft.minute == null) {
+      return;
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+    final strings = AppStrings.of(context);
+    setState(() => _isSaving = true);
+
+    final result = await AppDependencies.instance.updateClaimAccidentUseCase(
+      claimId: widget.args.claimId,
+      accidentType: draft.type!.apiValue,
+      accidentDate: _apiDate(date),
+      accidentTime: _apiTime(draft.hour!, draft.minute!),
+      description: draft.description.trim(),
+      damageDescription: draft.damageDescription.trim(),
+    );
+    if (!mounted) return;
+    setState(() => _isSaving = false);
+
+    result.fold(
+      (failure) => messenger.showSnackBar(
+        SnackBar(content: Text(strings.messageFor(failure))),
+      ),
+      (_) async {
+        InspectionProgress.complete(
+          widget.args.claimId,
+          InspectionStepId.accident,
+        );
+        await LocationPermissionScreen.open(
+          context,
+          claimId: widget.args.claimId,
+        );
+      },
+    );
+  }
+
+  /// `YYYY-MM-DD`, as the backend validates it.
+  static String _apiDate(DateTime date) =>
+      '${date.year.toString().padLeft(4, '0')}-'
+      '${date.month.toString().padLeft(2, '0')}-'
+      '${date.day.toString().padLeft(2, '0')}';
+
+  /// 24-hour `HH:mm`.
+  static String _apiTime(int hour, int minute) =>
+      '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
 
   Future<void> _scrollTo(AccidentField field) async {
     final key = switch (field) {
@@ -433,7 +483,8 @@ class _AccidentDetailsScreenState extends State<AccidentDetailsScreen> {
                 AppPrimaryButton(
                   label: strings.continueAction,
                   prominent: true,
-                  onPressed: _continue,
+                  isLoading: _isSaving,
+                  onPressed: _isSaving ? null : _continue,
                 ),
                 context.addVerticalSpace(8),
               ],

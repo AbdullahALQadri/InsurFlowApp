@@ -3,6 +3,7 @@ import 'package:insurflow/core/error/failures.dart';
 import 'package:insurflow/features/claims/domain/entities/claim.dart';
 import 'package:insurflow/features/claims/domain/inspection_progress.dart';
 import 'package:insurflow/features/claims/domain/usecases/accept_assignment.dart';
+import 'package:insurflow/features/claims/domain/usecases/decline_assignment.dart';
 import 'package:insurflow/features/claims/domain/usecases/get_claim_details.dart';
 import 'package:insurflow/features/claims/domain/usecases/start_claim.dart';
 
@@ -23,6 +24,13 @@ class ClaimStartRequested extends ClaimDetailsEvent {
 /// The adjuster confirmed they are available to take the assignment.
 class ClaimAssignmentAcceptRequested extends ClaimDetailsEvent {
   const ClaimAssignmentAcceptRequested();
+}
+
+/// The adjuster cannot take it, and gave the officer a reason.
+class ClaimAssignmentDeclineRequested extends ClaimDetailsEvent {
+  const ClaimAssignmentDeclineRequested(this.reason);
+
+  final String reason;
 }
 
 /// The availability dialog has been shown. Declining emits this and
@@ -109,19 +117,23 @@ class ClaimDetailsBloc extends Bloc<ClaimDetailsEvent, ClaimDetailsState> {
     required GetClaimDetailsUseCase getClaimDetailsUseCase,
     required StartClaimUseCase startClaimUseCase,
     required AcceptAssignmentUseCase acceptAssignmentUseCase,
+    required DeclineAssignmentUseCase declineAssignmentUseCase,
   }) : _getClaimDetailsUseCase = getClaimDetailsUseCase,
        _startClaimUseCase = startClaimUseCase,
        _acceptAssignmentUseCase = acceptAssignmentUseCase,
+       _declineAssignmentUseCase = declineAssignmentUseCase,
        super(const ClaimDetailsInitial()) {
     on<ClaimDetailsRequested>(_onRequested);
     on<ClaimStartRequested>(_onStartRequested);
     on<ClaimAssignmentAcceptRequested>(_onAcceptRequested);
+    on<ClaimAssignmentDeclineRequested>(_onDeclineRequested);
     on<ClaimAcceptancePrompted>(_onAcceptancePrompted);
   }
 
   final GetClaimDetailsUseCase _getClaimDetailsUseCase;
   final StartClaimUseCase _startClaimUseCase;
   final AcceptAssignmentUseCase _acceptAssignmentUseCase;
+  final DeclineAssignmentUseCase _declineAssignmentUseCase;
 
   Future<void> _onRequested(
     ClaimDetailsRequested event,
@@ -200,5 +212,44 @@ class ClaimDetailsBloc extends Bloc<ClaimDetailsEvent, ClaimDetailsState> {
     if (current is! ClaimDetailsLoadSuccess) return;
     if (current.hasPromptedAcceptance) return;
     emit(current.copyWith(hasPromptedAcceptance: true));
+  }
+
+  Future<void> _onDeclineRequested(
+    ClaimAssignmentDeclineRequested event,
+    Emitter<ClaimDetailsState> emit,
+  ) async {
+    final current = state;
+    if (current is! ClaimDetailsLoadSuccess) return;
+    if (!current.claim.status.awaitsAcceptance) return;
+
+    emit(
+      current.copyWith(
+        isAcceptingAssignment: true,
+        clearAcceptFailure: true,
+        hasPromptedAcceptance: true,
+      ),
+    );
+
+    final result = await _declineAssignmentUseCase(
+      DeclineAssignmentParams(claim: current.claim, reason: event.reason),
+    );
+    result.fold(
+      (failure) => emit(
+        current.copyWith(
+          isAcceptingAssignment: false,
+          acceptFailure: failure,
+          hasPromptedAcceptance: true,
+        ),
+      ),
+      // Re-read from the server: the claim has left this adjuster.
+      (claim) => emit(
+        current.copyWith(
+          claim: claim,
+          isAcceptingAssignment: false,
+          clearAcceptFailure: true,
+          hasPromptedAcceptance: true,
+        ),
+      ),
+    );
   }
 }

@@ -4,7 +4,7 @@ import 'package:insurflow/core/extensions/opacity_of_color.dart';
 import 'package:insurflow/core/extensions/text_style_extension.dart';
 import 'package:insurflow/core/global/design_system/font_weight/font_weight_helper.dart';
 import 'package:insurflow/core/global/design_system/theme_data/theme_extension.dart';
-import 'package:insurflow/core/global/design_system/widgets/location_status_bar.dart';
+import 'package:insurflow/core/global/design_system/widgets/live_location_status_bar.dart';
 import 'package:insurflow/core/services/location_tracking_service.dart';
 import 'package:insurflow/features/notifications/presentation/widgets/notification_bell.dart';
 
@@ -15,12 +15,16 @@ class HomeHeader extends StatelessWidget {
     required this.adjusterName,
     required this.subtitle,
     this.onAvatarTap,
+    this.locationService,
   });
 
   final String greeting;
   final String adjusterName;
   final String subtitle;
   final VoidCallback? onAvatarTap;
+
+  /// Lets a test supply its own tracking service to the badge.
+  final LocationTrackingService? locationService;
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +58,7 @@ class HomeHeader extends StatelessWidget {
                 ),
               ),
               context.addVerticalSpace(8),
-              const LocationStatusBar(status: GpsStatus.active),
+              LiveLocationStatusBar(service: locationService),
             ],
           ),
         ),

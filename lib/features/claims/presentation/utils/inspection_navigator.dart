@@ -2,7 +2,6 @@ import 'package:flutter/widgets.dart';
 import 'package:insurflow/features/claims/domain/inspection_progress.dart';
 import 'package:insurflow/features/claims/domain/inspection_progress_store.dart';
 import 'package:insurflow/features/claims/presentation/screens/accident_details_screen.dart';
-import 'package:insurflow/features/claims/presentation/screens/claim_documents_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/claim_review_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/claim_validation_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/customer_signature_screen.dart';
@@ -45,8 +44,6 @@ class InspectionNavigator {
         return LocationPermissionScreen.open(context, claimId: claimId);
       case InspectionStepId.evidence:
         return VehicleEvidenceScreen.open(context, claimId: claimId);
-      case InspectionStepId.documents:
-        return ClaimDocumentsScreen.open(context, claimId: claimId);
       case InspectionStepId.signature:
         return CustomerSignatureScreen.open(context, claimId: claimId);
       case InspectionStepId.review:

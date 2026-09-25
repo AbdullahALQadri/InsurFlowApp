@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:insurflow/core/di/app_dependencies.dart';
+import 'package:insurflow/core/services/location_tracking_service.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:insurflow/core/extensions/app_sizes.dart';
@@ -32,6 +34,27 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   ClaimStatus? _filter;
+
+  @override
+  void initState() {
+    super.initState();
+    // Keeps the adjuster's position fresh for the X-Latitude /
+    // X-Longitude headers the backend reads off ordinary requests.
+    _tracking.start();
+  }
+
+  @override
+  void dispose() {
+    // Pushing a claim screen leaves Home in the tree, so this only
+    // runs when the adjuster signs out or the app is torn down —
+    // exactly when the position should stop being reported. The
+    // service itself is app-wide and is not disposed here.
+    _tracking.stop();
+    super.dispose();
+  }
+
+  LocationTrackingService get _tracking =>
+      AppDependencies.instance.locationTrackingService;
 
   String _greeting(AppStrings strings) {
     final hour = DateTime.now().hour;

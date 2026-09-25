@@ -5,6 +5,8 @@ import 'package:insurflow/features/authentication/domain/entities/auth_session.d
 import 'package:insurflow/features/authentication/domain/usecases/login_usecase.dart';
 import 'package:insurflow/features/authentication/domain/usecases/logout_usecase.dart';
 import 'package:insurflow/features/authentication/domain/usecases/restore_session_usecase.dart';
+import 'package:insurflow/core/services/adjuster_position_store.dart';
+import 'package:insurflow/core/services/location_tracking_service.dart';
 
 sealed class AuthEvent {
   const AuthEvent();
@@ -59,9 +61,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required LoginUseCase loginUseCase,
     required LogoutUseCase logoutUseCase,
     required RestoreSessionUseCase restoreSessionUseCase,
+    LocationTrackingService? locationTrackingService,
+    AdjusterPositionStore? adjusterPositionStore,
   }) : _loginUseCase = loginUseCase,
        _logoutUseCase = logoutUseCase,
        _restoreSessionUseCase = restoreSessionUseCase,
+       _locationTrackingService = locationTrackingService,
+       _adjusterPositionStore = adjusterPositionStore,
        super(const AuthInitial()) {
     on<AuthSessionRequested>(_onSessionRequested);
     on<AuthLoginSubmitted>(_onLoginSubmitted);
@@ -71,6 +77,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final LoginUseCase _loginUseCase;
   final LogoutUseCase _logoutUseCase;
   final RestoreSessionUseCase _restoreSessionUseCase;
+
+  /// Optional so existing tests can build the bloc without them; both
+  /// are torn down on sign-out.
+  final LocationTrackingService? _locationTrackingService;
+  final AdjusterPositionStore? _adjusterPositionStore;
 
   Future<void> _onSessionRequested(
     AuthSessionRequested event,
@@ -111,6 +122,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     await _logoutUseCase(const NoParams());
+    // Stop reporting a position and drop the last fix, so the next
+    // user to sign in does not inherit this one's coordinates.
+    _locationTrackingService?.stop();
+    _adjusterPositionStore?.clear();
     emit(const AuthUnauthenticated());
   }
 }

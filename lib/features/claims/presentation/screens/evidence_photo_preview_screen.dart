@@ -16,6 +16,7 @@ import 'package:insurflow/core/routing/routes.dart';
 import 'package:insurflow/features/claims/domain/vehicle_evidence.dart';
 import 'package:insurflow/features/claims/presentation/widgets/evidence_category_preview.dart';
 import 'package:insurflow/core/global/design_system/tokens/app_palette.dart';
+import 'package:insurflow/core/di/app_dependencies.dart';
 
 class EvidencePhotoPreviewArgs {
   const EvidencePhotoPreviewArgs({
@@ -69,18 +70,60 @@ class EvidencePhotoPreviewScreen extends StatefulWidget {
 class _EvidencePhotoPreviewScreenState
     extends State<EvidencePhotoPreviewScreen> {
   var _saved = false;
+  var _isUploading = false;
 
+  /// Uploads this one photo, then returns to the checklist.
+  ///
+  /// `POST /claims/{id}/evidence` takes a single multipart `file` plus
+  /// its `imageType`, and each call appends to the claim's evidence
+  /// array — so one request per photo is the contract, not a batch.
+  /// The slot is only marked captured after the backend accepts it.
   Future<void> _usePhoto() async {
-    if (_saved) return;
-    setState(() => _saved = true);
-    widget.onUsePhoto?.call();
-    if (widget.onUsePhoto != null) return;
-    await Future<void>.delayed(EvidencePhotoPreviewScreen.savedHold);
+    if (_saved || _isUploading) return;
+
+    if (widget.onUsePhoto != null) {
+      setState(() => _saved = true);
+      widget.onUsePhoto!();
+      return;
+    }
+
+    final path = widget.args.imagePath;
+    final messenger = ScaffoldMessenger.of(context);
+    final strings = AppStrings.of(context);
+
+    if (path == null || path.isEmpty) {
+      // Nothing was captured, so there is nothing to send.
+      messenger.showSnackBar(
+        SnackBar(content: Text(strings.evidenceUploadFailed)),
+      );
+      return;
+    }
+
+    setState(() => _isUploading = true);
+    final result = await AppDependencies.instance.uploadClaimEvidenceUseCase(
+      claimId: widget.args.claimId,
+      filePath: path,
+      imageType: widget.args.category.apiValue,
+    );
     if (!mounted) return;
-    // TODO(api): Waiting for the Backend evidence upload endpoint.
-    // Confirming the photo only stores it locally until Postman
-    // exposes a reliable multipart contract.
-    Navigator.of(context).pop(true);
+
+    result.fold(
+      (failure) {
+        setState(() => _isUploading = false);
+        messenger.showSnackBar(
+          SnackBar(content: Text(strings.messageFor(failure))),
+        );
+      },
+      (_) async {
+        setState(() {
+          _isUploading = false;
+          _saved = true;
+        });
+        await Future<void>.delayed(EvidencePhotoPreviewScreen.savedHold);
+        if (!mounted) return;
+        Navigator.of(context).pop(true);
+      },
+    );
   }
 
   void _retake() {
@@ -145,14 +188,15 @@ class _EvidencePhotoPreviewScreenState
                   AppOutlinedButton(
                     key: const Key('evidence-retake'),
                     label: strings.retake,
-                    onPressed: _retake,
+                    onPressed: _isUploading ? null : _retake,
                   ),
                   context.addVerticalSpace(10),
                   AppPrimaryButton(
                     key: const Key('evidence-use-photo'),
                     label: strings.usePhoto,
                     prominent: true,
-                    onPressed: _usePhoto,
+                    isLoading: _isUploading,
+                    onPressed: _isUploading ? null : _usePhoto,
                   ),
                 ] else
                   context.addVerticalSpace(24),

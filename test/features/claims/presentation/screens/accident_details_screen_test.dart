@@ -48,7 +48,7 @@ void main() {
     );
 
     expect(find.text('Accident Details'), findsOneWidget);
-    expect(find.text('Step 2 of 8'), findsOneWidget);
+    expect(find.text('Step 2 of 7'), findsOneWidget);
     expect(find.byType(AccidentHeaderIllustration), findsOneWidget);
     expect(find.byType(AccidentTypeGrid), findsOneWidget);
     expect(find.text('Accident Type'), findsOneWidget);

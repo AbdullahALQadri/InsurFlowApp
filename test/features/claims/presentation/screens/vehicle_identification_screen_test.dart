@@ -44,7 +44,7 @@ void main() {
       find.text('Confirm the vehicle assigned to this claim.'),
       findsOneWidget,
     );
-    expect(find.text('Step 1 of 8'), findsOneWidget);
+    expect(find.text('Step 1 of 7'), findsOneWidget);
     expect(find.byType(VehicleScanIllustration), findsOneWidget);
     expect(find.text('Scan License Plate'), findsOneWidget);
     expect(find.text('Enter Plate Manually'), findsOneWidget);

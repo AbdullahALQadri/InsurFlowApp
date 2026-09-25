@@ -18,7 +18,7 @@ class LocationStatusBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final isArabic = AppStrings.of(context).isArabic;
+    final strings = AppStrings.of(context);
 
     Color badgeColor;
     switch (status) {
@@ -57,7 +57,7 @@ class LocationStatusBar extends StatelessWidget {
           ),
           context.addHorizontalSpace(6),
           Text(
-            status.labelAr(isArabic),
+            strings.gpsStatusLabel(status),
             style: context.font14Regular?.copyWith(
               color: colors.textPrimaryColor,
               fontSize: context.width(11),

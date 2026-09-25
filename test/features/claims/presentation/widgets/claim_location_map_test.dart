@@ -239,6 +239,45 @@ void main() {
       );
     });
 
+    testWidgets('new coordinates move the marker without a teardown', (
+      tester,
+    ) async {
+      // Regression: the map used to be keyed on its coordinates, so a
+      // refresh destroyed and rebuilt the platform view, and the
+      // replacement could come back on a stale camera — the map showed
+      // the wrong place while the address beside it was right.
+      final first = _claimFrom('claim_detail_sparse').incidentMapPoint!;
+      await pump(tester, ClaimLocationMap(point: first, markerId: 'incident'));
+
+      final firstKey = tester.widget<GoogleMap>(find.byType(GoogleMap)).key;
+
+      // A genuinely different position, as a refresh would deliver.
+      final moved = ClaimMapPoint.tryCreate(
+        latitude: first.latitude + 0.05,
+        longitude: first.longitude + 0.05,
+        address: first.address,
+      )!;
+      await tester.pumpWidget(
+        wrap(ClaimLocationMap(point: moved, markerId: 'incident')),
+      );
+      await tester.pump();
+
+      final map = tester.widget<GoogleMap>(find.byType(GoogleMap));
+
+      // One platform view throughout — the camera is animated instead.
+      expect(map.key, firstKey);
+
+      // The marker sits on the new coordinates, not the stale ones.
+      expect(
+        map.markers.single.position,
+        LatLng(moved.latitude, moved.longitude),
+      );
+      expect(
+        map.markers.single.position,
+        isNot(LatLng(first.latitude, first.longitude)),
+      );
+    });
+
     // Separate tests per theme: MaterialApp animates a theme swap, so
     // switching mid-test would read a half-interpolated brightness.
     testWidgets('applies the light map style under the light theme', (

@@ -1,12 +1,17 @@
 import 'package:insurflow/features/claims/domain/entities/claim.dart';
 import 'package:insurflow/features/claims/domain/inspection_progress_store.dart';
 
+/// The inspection steps, in the order the adjuster performs them.
+///
+/// There is no documents step: the backend exposes no document upload
+/// endpoint, so a claim can never carry documents and the submit
+/// endpoint never checks for them. Driver-licence style images go
+/// through evidence instead.
 enum InspectionStepId {
   vehicle,
   accident,
   location,
   evidence,
-  documents,
   signature,
   review,
   submission,

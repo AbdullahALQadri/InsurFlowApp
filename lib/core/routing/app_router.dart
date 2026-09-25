@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:insurflow/core/routing/routes.dart';
 import 'package:insurflow/features/authentication/presentation/screens/login_screen.dart';
-import 'package:insurflow/features/claims/domain/claim_documents.dart';
 import 'package:insurflow/features/claims/domain/vehicle_evidence.dart';
 import 'package:insurflow/features/claims/domain/vehicle_lookup_result.dart';
 import 'package:insurflow/features/claims/presentation/screens/accident_details_screen.dart';
@@ -11,11 +10,9 @@ import 'package:insurflow/features/claims/presentation/screens/evidence_camera_s
 import 'package:insurflow/features/claims/presentation/screens/evidence_photo_preview_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/capturing_location_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/location_permission_screen.dart';
-import 'package:insurflow/features/claims/presentation/screens/claim_documents_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/customer_signature_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/claim_review_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/claim_validation_screen.dart';
-import 'package:insurflow/features/claims/presentation/screens/document_preview_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/claim_details_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/claim_submitted_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/claim_location_map_screen.dart';
@@ -167,25 +164,6 @@ class AppRouter {
               );
         return MaterialPageRoute(
           builder: (_) => EvidencePhotoPreviewScreen(args: preview),
-        );
-      case Routes.claimDocumentsScreen:
-        final args = settings.arguments;
-        final documents = args is ClaimDocumentsArgs
-            ? args
-            : ClaimDocumentsArgs(claimId: args is String ? args : '');
-        return MaterialPageRoute(
-          builder: (_) => ClaimDocumentsScreen(args: documents),
-        );
-      case Routes.documentPreviewScreen:
-        final args = settings.arguments;
-        final preview = args is DocumentPreviewArgs
-            ? args
-            : const DocumentPreviewArgs(
-                claimId: '',
-                type: ClaimDocumentType.driverLicense,
-              );
-        return MaterialPageRoute(
-          builder: (_) => DocumentPreviewScreen(args: preview),
         );
       case Routes.customerSignatureScreen:
         final args = settings.arguments;

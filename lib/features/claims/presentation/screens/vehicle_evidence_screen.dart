@@ -10,7 +10,7 @@ import 'package:insurflow/core/l10n/app_strings.dart';
 import 'package:insurflow/core/routing/routes.dart';
 import 'package:insurflow/features/claims/domain/inspection_progress.dart';
 import 'package:insurflow/features/claims/domain/vehicle_evidence.dart';
-import 'package:insurflow/features/claims/presentation/screens/claim_documents_screen.dart';
+import 'package:insurflow/features/claims/presentation/screens/customer_signature_screen.dart';
 import 'package:insurflow/features/claims/presentation/screens/evidence_camera_screen.dart';
 import 'package:insurflow/features/claims/presentation/widgets/evidence_complete_view.dart';
 import 'package:insurflow/features/claims/presentation/widgets/evidence_photo_card.dart';
@@ -83,7 +83,9 @@ class _VehicleEvidenceScreenState extends State<VehicleEvidenceScreen> {
       return;
     }
     InspectionProgress.complete(widget.args.claimId, InspectionStepId.evidence);
-    ClaimDocumentsScreen.open(context, claimId: widget.args.claimId);
+    // Documents had no backend endpoint, so evidence now leads
+    // straight to the customer signature.
+    CustomerSignatureScreen.open(context, claimId: widget.args.claimId);
   }
 
   @override

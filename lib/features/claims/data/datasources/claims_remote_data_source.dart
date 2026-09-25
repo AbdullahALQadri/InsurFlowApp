@@ -10,6 +10,8 @@ abstract class ClaimsRemoteDataSource {
 
   Future<Claim> acceptAssignment(String claimId);
 
+  Future<Claim> declineAssignment(String claimId, String reason);
+
   Future<Claim> startClaim(String claimId);
 
   Future<Claim> submitClaim(String claimId);
@@ -107,6 +109,20 @@ class ClaimsRemoteDataSourceImpl implements ClaimsRemoteDataSource {
   @override
   Future<Claim> acceptAssignment(String claimId) async {
     await _dio.post<dynamic>('/claims/$claimId/accept-assignment');
+    return getClaimDetails(claimId);
+  }
+
+  /// `POST /claims/{id}/decline-assignment`
+  ///
+  /// Verified live: `reason` is required (400 "Reason is required"
+  /// without it). The claim leaves this adjuster, so the full record is
+  /// re-read the same way accept does.
+  @override
+  Future<Claim> declineAssignment(String claimId, String reason) async {
+    await _dio.post<dynamic>(
+      '/claims/$claimId/decline-assignment',
+      data: {'reason': reason},
+    );
     return getClaimDetails(claimId);
   }
 

@@ -15,6 +15,8 @@ import 'package:insurflow/features/claims/presentation/screens/claim_review_scre
 import 'package:insurflow/features/claims/presentation/widgets/customer_signature_pad.dart';
 import 'package:insurflow/features/claims/presentation/widgets/inspection_step_track.dart';
 import 'package:insurflow/features/claims/presentation/widgets/signature_pen_illustration.dart';
+import 'package:insurflow/core/di/app_dependencies.dart';
+import 'package:insurflow/features/claims/domain/signature_image_encoder.dart';
 
 class CustomerSignatureArgs {
   const CustomerSignatureArgs({required this.claimId});
@@ -50,6 +52,8 @@ class CustomerSignatureScreen extends StatefulWidget {
 
 class _CustomerSignatureScreenState extends State<CustomerSignatureScreen> {
   final _strokes = <List<Offset>>[];
+  final _padKey = GlobalKey();
+  var _isUploading = false;
 
   bool get _hasInk => _strokes.any((stroke) => stroke.length >= 2);
 
@@ -74,8 +78,14 @@ class _CustomerSignatureScreenState extends State<CustomerSignatureScreen> {
     setState(() => _strokes.clear());
   }
 
-  void _confirm() {
-    if (!_hasInk) return;
+  /// Renders what the customer actually drew and uploads it.
+  ///
+  /// `POST /claims/{id}/signature` takes a single multipart `file`, so
+  /// the strokes are rasterised to a PNG first. The step is only marked
+  /// complete once the backend has stored it.
+  Future<void> _confirm() async {
+    if (!_hasInk || _isUploading) return;
+
     final signature = CustomerSignature(
       claimId: widget.args.claimId,
     ).captured();
@@ -83,14 +93,48 @@ class _CustomerSignatureScreenState extends State<CustomerSignatureScreen> {
       widget.onConfirm!(signature);
       return;
     }
-    // TODO(api): Waiting for the Backend signature capture endpoint.
-    // Confirming stores the signature locally until Postman exposes
-    // a reliable upload contract. Do not invent a signature route.
-    InspectionProgress.complete(
-      widget.args.claimId,
-      InspectionStepId.signature,
+
+    final messenger = ScaffoldMessenger.of(context);
+    final strings = AppStrings.of(context);
+    final size = _padKey.currentContext?.size;
+    if (size == null) return;
+
+    setState(() => _isUploading = true);
+
+    final path = await const SignatureImageEncoder().encodeToFile(
+      strokes: _strokes,
+      size: size,
+      claimId: widget.args.claimId,
     );
-    ClaimReviewScreen.open(context, claimId: widget.args.claimId);
+    if (!mounted) return;
+
+    if (path == null) {
+      setState(() => _isUploading = false);
+      messenger.showSnackBar(
+        SnackBar(content: Text(strings.signatureUploadFailed)),
+      );
+      return;
+    }
+
+    final result = await AppDependencies.instance.uploadClaimSignatureUseCase(
+      claimId: widget.args.claimId,
+      filePath: path,
+    );
+    if (!mounted) return;
+    setState(() => _isUploading = false);
+
+    result.fold(
+      (failure) => messenger.showSnackBar(
+        SnackBar(content: Text(strings.messageFor(failure))),
+      ),
+      (_) {
+        InspectionProgress.complete(
+          widget.args.claimId,
+          InspectionStepId.signature,
+        );
+        ClaimReviewScreen.open(context, claimId: widget.args.claimId);
+      },
+    );
   }
 
   @override
@@ -177,6 +221,7 @@ class _CustomerSignatureScreenState extends State<CustomerSignatureScreen> {
                       context.addVerticalSpace(16),
                       Expanded(
                         child: CustomerSignaturePad(
+                          key: _padKey,
                           strokes: List.unmodifiable(_strokes),
                           onStartStroke: _startStroke,
                           onUpdateStroke: _updateStroke,
@@ -207,14 +252,15 @@ class _CustomerSignatureScreenState extends State<CustomerSignatureScreen> {
                       AppOutlinedButton(
                         key: const Key('signature-clear'),
                         label: strings.clearSignature,
-                        onPressed: _hasInk ? _clear : null,
+                        onPressed: (_hasInk && !_isUploading) ? _clear : null,
                       ),
                       context.addVerticalSpace(10),
                       AppPrimaryButton(
                         key: const Key('signature-confirm'),
                         label: strings.confirmSignature,
                         prominent: true,
-                        onPressed: _hasInk ? _confirm : null,
+                        isLoading: _isUploading,
+                        onPressed: (_hasInk && !_isUploading) ? _confirm : null,
                       ),
                     ],
                   ),

@@ -1,13 +1,13 @@
 import 'package:flutter/widgets.dart';
 import 'package:insurflow/core/error/failures.dart';
 import 'package:insurflow/features/claims/domain/accident_details.dart';
-import 'package:insurflow/features/claims/domain/claim_documents.dart';
 import 'package:insurflow/features/claims/domain/claim_status.dart';
 import 'package:insurflow/features/claims/domain/claim_validation_progress.dart';
 import 'package:insurflow/features/claims/domain/inspection_progress.dart';
 import 'package:insurflow/features/claims/domain/vehicle_evidence.dart';
 import 'package:insurflow/features/claims/domain/vehicle_lookup_progress.dart';
 import 'package:insurflow/features/claims/domain/entities/claim_details.dart';
+import 'package:insurflow/core/services/location_tracking_service.dart';
 
 class AppStrings {
   const AppStrings(this.locale);
@@ -352,6 +352,47 @@ class AppStrings {
   String get refreshLocation => isArabic ? 'تحديث الموقع' : 'Refresh Location';
   String get confirmLocation => isArabic ? 'تأكيد الموقع' : 'Confirm Location';
   String get vehicleEvidence => isArabic ? 'أدلة المركبة' : 'Vehicle Evidence';
+  String get evidenceUploadFailed => isArabic
+      ? 'تعذّر رفع الصورة. حاول مرة أخرى.'
+      : 'Could not upload the photo. Please try again.';
+  String get signatureUploadFailed => isArabic
+      ? 'تعذّر رفع التوقيع. حاول مرة أخرى.'
+      : 'Could not upload the signature. Please try again.';
+  String get accidentSaveFailed => isArabic
+      ? 'تعذّر حفظ تفاصيل الحادث. حاول مرة أخرى.'
+      : 'Could not save the accident details. Please try again.';
+  String get declineReasonTitle =>
+      isArabic ? 'سبب الاعتذار' : 'Reason for declining';
+  String get declineReasonHint => isArabic
+      ? 'وضّح سبب عدم تمكّنك من قبول هذه المهمة'
+      : 'Tell the officer why you cannot take this assignment';
+  /// Copy for the device's location status, kept here rather than on
+  /// the enum so the service stays free of presentation concerns.
+  String gpsStatusLabel(GpsStatus status) {
+    switch (status) {
+      case GpsStatus.active:
+        return isArabic ? 'الموقع نشط' : 'Location active';
+      case GpsStatus.weakGps:
+        return isArabic ? 'تغطية ضعيفة' : 'Weak GPS';
+      case GpsStatus.disabled:
+        return isArabic ? 'الموقع معطل' : 'Location off';
+      case GpsStatus.permissionDenied:
+        return isArabic ? 'الصلاحية مرفوضة' : 'Location denied';
+      case GpsStatus.waitingConnection:
+        return isArabic ? 'جارٍ تحديد الموقع' : 'Locating';
+    }
+  }
+
+  String get declineReasonRequired => isArabic
+      ? 'الرجاء كتابة السبب.'
+      : 'Please enter a reason.';
+  String get assignmentDeclined => isArabic
+      ? 'تم إرسال اعتذارك عن المهمة.'
+      : 'Your decline has been sent.';
+  String get assignmentDeclineFailed => isArabic
+      ? 'تعذّر إرسال الاعتذار. حاول مرة أخرى.'
+      : 'Could not send the decline. Please try again.';
+  String get submitDecline => isArabic ? 'إرسال' : 'Send';
   String get vehicleEvidenceSubtitle => isArabic
       ? 'التقط جميع الصور المطلوبة قبل الإرسال.'
       : 'Capture all required photos before submitting.';
@@ -384,9 +425,6 @@ class AppStrings {
       isArabic ? 'اختر مصدر الرفع' : 'Choose a source';
   String get reviewDocument => isArabic ? 'مراجعة المستند' : 'Review Document';
   String get capturedToday => isArabic ? 'التُقطت اليوم' : 'Captured today';
-  String documentSaved(ClaimDocumentType type) => isArabic
-      ? '✓ تم حفظ ${claimDocumentLabel(type)}'
-      : '✓ ${claimDocumentLabel(type)} saved';
   String get customerConfirmation =>
       isArabic ? 'تأكيد العميل' : 'Customer Confirmation';
   String get customerSignatureSubtitle => isArabic
@@ -833,29 +871,7 @@ class AppStrings {
   String requiredDocumentsProgress(int completed, int total) => isArabic
       ? '$completed / $total مستندات مطلوبة'
       : '$completed / $total required documents';
-  String claimDocumentLabel(ClaimDocumentType type) {
-    switch (type) {
-      case ClaimDocumentType.driverLicense:
-        return isArabic ? 'رخصة القيادة' : 'Driver License';
-      case ClaimDocumentType.nationalId:
-        return isArabic ? 'الهوية الوطنية' : 'National ID';
-      case ClaimDocumentType.policeReport:
-        return isArabic ? 'تقرير الشرطة' : 'Police Report';
-      case ClaimDocumentType.other:
-        return isArabic ? 'أخرى' : 'Other';
-    }
-  }
 
-  String documentSourceLabel(DocumentSource source) {
-    switch (source) {
-      case DocumentSource.camera:
-        return camera;
-      case DocumentSource.gallery:
-        return gallery;
-      case DocumentSource.files:
-        return files;
-    }
-  }
 
   String requiredPhotosProgress(int completed, int total) => isArabic
       ? '$completed / $total صور مطلوبة'
@@ -1134,8 +1150,6 @@ class AppStrings {
         return isArabic ? 'الموقع' : 'Location';
       case InspectionStepId.evidence:
         return isArabic ? 'الأدلة' : 'Evidence';
-      case InspectionStepId.documents:
-        return isArabic ? 'المستندات' : 'Documents';
       case InspectionStepId.signature:
         return isArabic ? 'التوقيع' : 'Signature';
       case InspectionStepId.review:
@@ -1155,8 +1169,6 @@ class AppStrings {
         return locationCompleted;
       case InspectionStepId.evidence:
         return evidenceCompleted;
-      case InspectionStepId.documents:
-        return documentsCompleted;
       case InspectionStepId.signature:
         return signatureCompleted;
       case InspectionStepId.review:
